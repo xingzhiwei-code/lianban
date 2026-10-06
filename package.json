@@ -1,0 +1,20 @@
+{
+  "name": "lianban",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "练伴 —— Web-first 跟练产品（V0 跟练闭环）",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dexie": "^4.0.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8"
+  }
+}

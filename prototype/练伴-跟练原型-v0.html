@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>练伴 · 哺乳期跟练原型 v0</title>
+<style>
+:root{
+  --bg:#FFF8F1; --card:#FFFFFF; --ink:#3B3330; --muted:#A2938A;
+  --coral:#FF7E67; --coral-deep:#EF5F45; --coral-soft:#FFE8E1;
+  --leaf:#7FB069; --leaf-soft:#EAF4E4;
+  --sun:#FFB627; --sun-soft:#FFF3D6;
+  --sky:#6AAFE6; --sky-soft:#E3F0FC;
+  --line:#F1E7DD; --radius:20px;
+  --shadow:0 8px 24px rgba(180,130,100,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{background:#ECE3D8;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:var(--ink);}
+.phone{max-width:430px;margin:0 auto;background:var(--bg);min-height:100dvh;position:relative;box-shadow:0 0 48px rgba(120,90,70,.14);padding-bottom:96px;}
+h1,h2,h3,p{margin:0;}
+button{font-family:inherit;}
+
+/* ---------- 通用 ---------- */
+.wrap{padding:18px 18px 0;}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:14px;border:1px solid #FBF3EA;}
+.card.tint-coral{background:linear-gradient(135deg,#FFEDE6,#FFF8F1);}
+.card.tint-leaf{background:linear-gradient(135deg,#EDF6E7,#F8FDF5);}
+.card.tint-sun{background:linear-gradient(135deg,#FFF4D9,#FFFBF0);}
+.eyebrow{font-size:12px;color:var(--muted);letter-spacing:.08em;margin-bottom:6px;}
+.title{font-size:20px;font-weight:700;margin-bottom:4px;}
+.sub{font-size:13px;color:var(--muted);line-height:1.6;}
+.btn{display:block;width:100%;border:none;border-radius:999px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .08s;}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:linear-gradient(135deg,var(--coral),var(--coral-deep));color:#fff;box-shadow:0 8px 20px rgba(255,126,103,.35);}
+.btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);}
+.btn-row{display:flex;gap:10px;}
+.btn-row .btn{flex:1;}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 18px;font-size:14px;cursor:pointer;color:var(--ink);}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+.pill{font-size:12px;padding:5px 12px;border-radius:999px;background:var(--coral-soft);color:#C2502F;font-weight:600;}
+.pill.green{background:var(--leaf-soft);color:#4E7A3E;}
+.pill.blue{background:var(--sky-soft);color:#3E739E;}
+.progress{height:10px;background:#F3EAE0;border-radius:99px;overflow:hidden;}
+.progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--sky),#8FC3EE);border-radius:99px;transition:width .4s;}
+.progress.leaf > i{background:linear-gradient(90deg,var(--leaf),#9CCB86);}
+.progress.coral > i{background:linear-gradient(90deg,var(--coral),var(--coral-deep));}
+.divider{height:1px;background:var(--line);margin:14px 0;}
+.row-between{display:flex;justify-content:space-between;align-items:center;}
+.small{font-size:12px;color:var(--muted);}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;padding:10px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:99;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* ---------- 开屏问卷 ---------- */
+#screen-onboard{padding:28px 22px;max-width:430px;margin:0 auto;min-height:100dvh;background:var(--bg);}
+.ob-logo{font-size:44px;text-align:center;margin:26px 0 8px;}
+.ob-brand{text-align:center;font-size:24px;font-weight:800;letter-spacing:.06em;}
+.ob-tag{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 26px;line-height:1.7;}
+.ob-steps{display:flex;gap:6px;justify-content:center;margin-bottom:22px;}
+.ob-steps i{width:34px;height:6px;border-radius:99px;background:#EDDFD2;}
+.ob-steps i.on{background:var(--coral);}
+.ob-q{font-size:18px;font-weight:700;margin:18px 0 4px;}
+.ob-q small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;}
+.ob-nav{margin-top:28px;}
+.link{display:block;text-align:center;margin-top:16px;font-size:13px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;width:100%;}
+.ob-note{background:var(--sun-soft);border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#8A6D1B;margin-top:18px;}
+
+/* ---------- 首页 ---------- */
+.hello{font-size:24px;font-weight:800;}
+.hello .wave{display:inline-block;animation:wave 2.4s infinite;transform-origin:70% 70%;}
+@keyframes wave{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(14deg)}20%{transform:rotate(-8deg)}30%{transform:rotate(14deg)}40%{transform:rotate(-4deg)}50%{transform:rotate(8deg)}}
+.date-line{font-size:13px;color:var(--muted);margin:6px 0 16px;}
+.hero-emoji{font-size:40px;}
+.dots{display:flex;gap:8px;margin-top:12px;}
+.dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#F3EAE0;color:var(--muted);}
+.dot.done{background:var(--coral);color:#fff;}
+.dot.today{border:2px dashed var(--coral);background:#fff;color:var(--coral);}
+.stat3{display:flex;gap:10px;}
+.stat{flex:1;background:#fff;border:1px solid #FBF3EA;border-radius:16px;padding:12px 6px;text-align:center;box-shadow:var(--shadow);}
+.stat b{font-size:17px;display:block;}
+.stat span{font-size:11px;color:var(--muted);}
+.tip-card{display:flex;gap:12px;align-items:flex-start;}
+.tip-card .t-emoji{font-size:26px;}
+.tip-card p{font-size:13.5px;line-height:1.7;}
+.safety{background:#FFF4D9;border:1.5px dashed #E3B93C;border-radius:var(--radius);padding:14px 16px;font-size:13px;line-height:1.7;margin-bottom:14px;color:#7A5E14;}
+
+/* ---------- 动作库 ---------- */
+.lib-row{background:#fff;border:1px solid #FBF3EA;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer;}
+.lib-top{display:flex;align-items:center;gap:12px;}
+.lib-emoji{font-size:30px;width:48px;height:48px;background:var(--bg);border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none;}
+.lib-name{font-weight:700;font-size:15px;}
+.lib-tags{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;}
+.lib-cues{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted);line-height:1.9;}
+.lib-row.open .lib-cues{display:block;}
+.stars{color:var(--sun);font-size:12px;letter-spacing:2px;}
+
+/* ---------- 数据 ---------- */
+canvas.chart{width:100%;height:170px;display:block;}
+.meas-grid{display:flex;gap:10px;}
+.meas{flex:1;text-align:center;background:#fff;border:1px solid #FBF3EA;border-radius:14px;padding:12px 4px;}
+.meas b{font-size:16px;display:block;}
+.meas span{font-size:11px;color:var(--muted);}
+.meas .trend{font-size:11px;font-weight:700;}
+.trend.down{color:var(--leaf);} .trend.flat{color:var(--muted);}
+.nutri-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.nutri-row:last-child{margin-bottom:0;}
+.nutri-emoji{font-size:26px;}
+.nutri-info{flex:1;}
+.nutri-info b{font-size:14px;}
+.mini-btn{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);}
+.mini-btn:active{background:var(--coral-soft);}
+.hist-row{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+.hist-row:last-child{border:none;}
+.hist-emoji{font-size:24px;}
+.hist-row b{display:block;font-size:14px;}
+.checkbox-row{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;}
+.checkbox-row input{width:20px;height:20px;accent-color:var(--leaf);}
+
+/* ---------- 底部导航 ---------- */
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:40;}
+.tabbar button{flex:1;background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.tabbar button .ti{font-size:22px;}
+.tabbar button.on{color:var(--coral-deep);font-weight:700;}
+.tab{display:none;}
+.tab.on{display:block;animation:fade .25s;}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+
+/* ---------- 跟练播放器 ---------- */
+#player{position:fixed;inset:0;z-index:60;display:flex;justify-content:center;background:rgba(59,51,48,.45);}
+.sheet{width:100%;max-width:430px;background:var(--bg);height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+.pl-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;font-size:14px;font-weight:700;}
+.pl-close{background:#fff;border:1px solid var(--line);width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--muted);}
+.pl-body{flex:1;overflow-y:auto;padding:6px 22px 22px;display:flex;flex-direction:column;}
+.pl-emoji{font-size:76px;text-align:center;margin:14px 0 6px;animation:breathe 3s ease-in-out infinite;}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.pl-name{text-align:center;font-size:22px;font-weight:800;}
+.pl-set{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 4px;}
+.pl-cues{background:#fff;border-radius:16px;padding:14px 16px;margin:14px 0;font-size:13.5px;line-height:2;color:var(--ink);border:1px solid #FBF3EA;}
+.pl-cues li{margin-left:18px;}
+.ring-wrap{position:relative;width:190px;height:190px;margin:10px auto;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:#F0E4D6;stroke-width:12;}
+.ring-fg{fill:none;stroke:url(#gradRing);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .3s linear;}
+.ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-num b{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;}
+.ring-num span{font-size:12px;color:var(--muted);}
+.reps-big{text-align:center;font-size:56px;font-weight:800;margin:18px 0 4px;}
+.reps-big small{font-size:16px;color:var(--muted);font-weight:400;}
+.pl-controls{display:flex;gap:10px;margin-top:16px;}
+.pl-controls .btn{padding:13px;font-size:15px;}
+.voice-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:13px;color:var(--muted);}
+.switch{position:relative;width:48px;height:28px;background:#E4D8CB;border-radius:99px;cursor:pointer;transition:background .2s;border:none;}
+.switch.on{background:var(--leaf);}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:left .2s;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.switch.on::after{left:23px;}
+.rest-emoji{font-size:60px;text-align:center;margin:20px 0 8px;}
+.rest-next{background:#fff;border-radius:14px;padding:12px 16px;font-size:13px;margin:14px 0;border:1px dashed var(--line);}
+.rpe-btns{display:flex;gap:10px;margin-top:16px;}
+.rpe{flex:1;background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px 6px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);}
+.rpe .e{font-size:34px;display:block;margin-bottom:8px;}
+.rpe.on{border-color:var(--coral);background:var(--coral-soft);}
+.sum-grid{display:flex;gap:10px;margin:16px 0;}
+.enc-card{background:linear-gradient(135deg,#FFE9E2,#FFF6F1);border-radius:var(--radius);padding:18px;font-size:14.5px;line-height:1.9;border:1px solid #FFD9CC;}
+.enc-card b{color:var(--coral-deep);}
+.adapt-card{background:var(--leaf-soft);border-radius:var(--radius);padding:16px 18px;font-size:13.5px;line-height:1.8;margin-bottom:14px;color:#3E5C33;}
+.pl-foot{padding:14px 22px calc(18px + env(safe-area-inset-bottom));background:var(--bg);}
+.safety-foot{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6;}
+.modal-mask{position:fixed;inset:0;background:rgba(59,51,48,.5);z-index:70;display:flex;align-items:flex-end;justify-content:center;}
+.modal{width:100%;max-width:430px;background:#fff;border-radius:24px 24px 0 0;padding:24px 22px calc(26px + env(safe-area-inset-bottom));animation:up .25s;}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.modal h3{font-size:18px;margin-bottom:10px;}
+.modal p{font-size:14px;line-height:1.8;color:var(--ink);margin-bottom:18px;}
+/* ---------- 跟练演示动画 ---------- */
+.demo-stage{background:#fff;border:1px solid #FBF3EA;border-radius:16px;margin:4px 0;overflow:hidden;}
+.demo-stage svg{width:100%;height:176px;display:block;}
+.demo-stage.paused *{animation-play-state:paused !important;}
+.demo-hint{text-align:center;font-size:12px;color:var(--muted);padding:2px 0 10px;}
+.fig{stroke:#3B3330;stroke-width:7;stroke-linecap:round;fill:none;}
+.fig-head{fill:#FFD9CC;stroke:#3B3330;stroke-width:5;}
+.limb{transform-box:fill-box;}
+@keyframes swingA{0%,100%{transform:rotate(24deg)}50%{transform:rotate(-24deg)}}
+@keyframes swingB{0%,100%{transform:rotate(-24deg)}50%{transform:rotate(24deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes tremble{0%,100%{transform:translateX(0)}25%{transform:translateX(1.8px)}75%{transform:translateX(-1.8px)}}
+@keyframes lift{0%,100%{transform:rotate(5deg)}50%{transform:rotate(-6deg)}}
+@keyframes pivot{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-7deg)}}
+@keyframes pressL{0%,100%{transform:rotate(0deg)}50%{transform:rotate(150deg)}}
+@keyframes pressR{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-150deg)}}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes sway{0%,100%{transform:rotate(5deg)}50%{transform:rotate(-5deg)}}
+/* ---------- 视频导入 ---------- */
+.field{border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;background:#fff;font-family:inherit;color:var(--ink);width:100%;}
+.field:focus{outline:none;border-color:var(--coral);}
+.seg-row{background:#fff;border:1px solid #FBF3EA;border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:var(--shadow);}
+.seg-name{font-weight:700;margin-bottom:8px;}
+.seg-times{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+.au-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.au-row:last-child{border:none;}
+/* ---------- 场景 & 动作库升级 ---------- */
+.scen-pill{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:8px 14px;cursor:pointer;border:none;}
+.search{margin:0 0 4px;}
+.frow-label{font-size:12px;color:var(--muted);margin:10px 0 2px;}
+.sel-dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);background:#fff;flex:none;display:none;align-items:center;justify-content:center;margin-right:2px;}
+.selecting .sel-dot{display:flex;}
+.lib-row.sel .sel-dot{background:var(--coral);border-color:var(--coral);}
+.lib-row.sel .sel-dot::after{content:"✓";color:#fff;font-size:12px;font-weight:800;}
+.lib-row.sel{border-color:var(--coral);background:#FFF9F6;}
+.build-bar{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);width:calc(100% - 36px);max-width:394px;background:var(--ink);color:#fff;border-radius:18px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;z-index:45;box-shadow:0 12px 28px rgba(0,0,0,.25);}
+.build-bar b{font-size:14px;}
+.modal-demo{background:#fff;border:1px solid #FBF3EA;border-radius:16px;overflow:hidden;margin:10px 0;}
+.modal-demo svg{width:100%;height:180px;display:block;}
+.safe-pill{font-size:11px;padding:4px 10px;border-radius:999px;background:var(--leaf-soft);color:#4E7A3E;font-weight:700;}
+.safe-pill.warn{background:#FDECEA;color:#C2502F;}
+@keyframes crunch{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-18deg)}}
+.seg-times .field{flex:1;text-align:center;}
+.seg-times label{display:flex;align-items:center;gap:6px;flex:1;}
+.field.num{width:64px;flex:none;text-align:center;}
+[hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- ============ 开屏问卷 ============ -->
+  <section id="screen-onboard">
+    <div class="ob-logo">🍑</div>
+    <div class="ob-brand">练伴</div>
+    <p class="ob-tag">哺乳期妈妈的跟练小伙伴<br>塑形 · 记录 · 反馈 · 情绪价值</p>
+    <div class="ob-steps"><i class="on"></i><i></i><i></i></div>
+
+    <div class="ob-panel" data-panel="1">
+      <p class="ob-q">你现在处于哪个场景？<small>练伴为不同人群准备了不同计划，产后恢复是其中之一</small></p>
+      <div class="chips" data-q="scenario">
+        <button class="chip" data-v="postpartum">🍼 产后恢复</button>
+        <button class="chip" data-v="beginner">🌱 新手入门</button>
+        <button class="chip" data-v="fatloss">🔥 减脂燃脂</button>
+        <button class="chip" data-v="muscle">💪 塑形增肌</button>
+        <button class="chip" data-v="office">🪑 办公拉伸</button>
+      </div>
+      <div id="ppExtra" hidden>
+        <p class="ob-q">宝宝现在多大了？</p>
+        <div class="chips" data-q="babyAge">
+          <button class="chip" data-v="0">6周以内</button>
+          <button class="chip" data-v="1">6周~6个月</button>
+          <button class="chip" data-v="2">6~12个月</button>
+          <button class="chip" data-v="3">12个月以上</button>
+        </div>
+        <p class="ob-q">分娩方式是？<small>剖腹产的妈妈腹肌恢复需要更久，计划会更温和地起步</small></p>
+        <div class="chips" data-q="birth">
+          <button class="chip" data-v="顺产">顺产</button>
+          <button class="chip" data-v="剖腹产">剖腹产</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ob-panel" data-panel="2" hidden>
+      <div id="ppClear" hidden>
+        <p class="ob-q">医生说可以正常运动了吗？<small>这是安全底线，如实选就好，不评判 💛</small></p>
+        <div class="chips" data-q="cleared">
+          <button class="chip" data-v="yes">可以了</button>
+          <button class="chip" data-v="notyet">还没问过</button>
+          <button class="chip" data-v="no">医生说再等等</button>
+        </div>
+      </div>
+      <p class="ob-q">之前有运动基础吗？</p>
+      <div class="chips" data-q="base">
+        <button class="chip" data-v="0">纯新手</button>
+        <button class="chip" data-v="1">偶尔动一动</button>
+        <button class="chip" data-v="2">经常练</button>
+      </div>
+    </div>
+
+    <div class="ob-panel" data-panel="3" hidden>
+      <p class="ob-q">每次能投入多久？<small>带娃的时间是碎的，短而规律比长而偶尔更有效</small></p>
+      <div class="chips" data-q="minutes">
+        <button class="chip" data-v="15">15分钟</button>
+        <button class="chip" data-v="20">20分钟</button>
+        <button class="chip" data-v="30">30分钟</button>
+      </div>
+      <p class="ob-q">家里有什么器械？</p>
+      <div class="chips" data-q="equip">
+        <button class="chip" data-v="徒手">徒手就好</button>
+        <button class="chip" data-v="小器械">有哑铃/弹力带</button>
+      </div>
+      <div class="ob-note" id="obNote">🍼 哺乳期小提醒：训练不需要节食，奶水和营养是第一位的；练前练后记得喝水，喂完奶再练会更舒服。如有任何不适请停下来，必要时咨询医生。</div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn btn-primary" id="obNext">下一步</button>
+      <button class="link" id="obSkip">先跳过，直接看看</button>
+    </div>
+  </section>
+
+  <!-- ============ 主应用 ============ -->
+  <div id="app" hidden>
+    <main>
+      <!-- 首页 -->
+      <section class="tab on" id="tab-home">
+        <div class="wrap">
+          <div class="row-between" style="margin-bottom:2px">
+            <h1 class="hello"><span class="wave">👋</span> <span id="greetTime">下午好</span></h1>
+            <button class="scen-pill" id="scenSwitch">🍼 产后恢复 · 切换</button>
+          </div>
+          <p class="date-line" id="dateLine"></p>
+
+          <div class="safety" id="safetyBanner" hidden>
+            💛 医生还没点头？那先每天散步 20 分钟就很好，力量训练等绿灯亮起再开始。练伴会在这里等你，不着急。
+          </div>
+
+          <div class="card tint-coral">
+            <div class="row-between">
+              <div class="hero-emoji" id="courseEmoji">🍑</div>
+              <div style="text-align:right" id="coursePills"><span class="pill">哺乳期友好</span> <span class="pill green">塑形</span></div>
+            </div>
+            <p class="title" style="margin-top:10px" id="courseTitle">全身唤醒 · 跟练</p>
+            <p class="sub" id="courseDesc">专为哺乳期妈妈设计，低冲击、护盆底</p>
+            <div class="meta" id="courseMeta"></div>
+            <button class="btn btn-primary" id="startBtn">开始跟练 ▶</button>
+          </div>
+
+          <div class="card">
+            <p class="title" style="font-size:16px">今天状态怎么样？</p>
+            <p class="sub">没状态也有练法，一键降载，不纠结</p>
+            <div class="chips" id="adaptChips">
+              <button class="chip" data-ad="fast">⚡ 只有10分钟</button>
+              <button class="chip" data-ad="quiet">🤫 要安静低冲击</button>
+              <button class="chip" data-ad="easy">😮‍💨 轻松点</button>
+            </div>
+          </div>
+
+          <div class="card tip-card" id="goVideoCard" style="cursor:pointer">
+            <div class="t-emoji">🎬</div>
+            <div><p class="eyebrow">视频跟练</p><p>导入自己的训练视频，切成小段跟着练 →</p></div>
+          </div>
+
+          <div class="card tip-card">
+            <div class="t-emoji">💧</div>
+            <div><p class="eyebrow">哺乳期小贴士</p><p id="tipText"></p></div>
+          </div>
+
+          <div class="card">
+            <div class="row-between"><p class="title" style="font-size:16px">本周打卡</p><span class="small" id="weekCount"></span></div>
+            <div class="dots" id="weekDots"></div>
+            <p class="sub" style="margin-top:10px" id="streakText"></p>
+          </div>
+
+          <div class="stat3" style="margin-bottom:14px">
+            <div class="stat"><b id="statWeight">51.0<small style="font-size:11px;color:var(--muted)">kg</small></b><span>体重 · 持平→</span></div>
+            <div class="stat"><b id="statMinutes">86<small style="font-size:11px;color:var(--muted)">分</small></b><span>本周训练</span></div>
+            <div class="stat"><b id="statStreak">5<small style="font-size:11px;color:var(--muted)">天</small></b><span>连续打卡</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 动作库 -->
+      <section class="tab" id="tab-lib">
+        <div class="wrap">
+          <div class="row-between">
+            <h1 class="hello" style="font-size:22px">动作库 💪</h1>
+            <button class="mini-btn" id="selModeBtn">自建跟练</button>
+          </div>
+          <p class="date-line" id="libSub">点开看演示、要领与进退阶</p>
+          <input class="field search" id="libSearch" placeholder="🔍 搜索动作，如 臀桥">
+          <p class="frow-label">部位</p>
+          <div class="chips" id="fPart" style="margin-top:6px">
+            <button class="chip on" data-v="全部">全部</button>
+            <button class="chip" data-v="全身">全身</button>
+            <button class="chip" data-v="臀腿">臀腿</button>
+            <button class="chip" data-v="上肢">上肢</button>
+            <button class="chip" data-v="核心">核心</button>
+            <button class="chip" data-v="放松">放松</button>
+          </div>
+          <p class="frow-label">难度</p>
+          <div class="chips" id="fLv" style="margin-top:6px">
+            <button class="chip on" data-v="全部">全部</button>
+            <button class="chip" data-v="1">新手友好</button>
+            <button class="chip" data-v="2">进阶</button>
+            <button class="chip" data-v="3">挑战</button>
+          </div>
+          <div class="row-between" style="margin:12px 0 4px">
+            <span class="small" id="safeNote">🛡️ 已按场景过滤安全动作</span>
+            <button class="switch on" id="safeToggle" aria-label="安全过滤开关" style="transform:scale(.85)"></button>
+          </div>
+          <div id="libList" style="margin-top:8px"></div>
+          <p class="safety-foot" id="libSafety">有不适立刻停止 · 必要时咨询医生</p>
+        </div>
+      </section>
+
+      <!-- 视频 -->
+      <section class="tab" id="tab-video">
+        <div class="wrap">
+          <h1 class="hello" style="font-size:22px">视频跟练 🎬</h1>
+          <p class="date-line">导入训练视频，切成小段，跟着练</p>
+
+          <div class="card">
+            <p class="title" style="font-size:16px">📱 导入本地视频</p>
+            <p class="sub">手机里的训练视频、自己拍的动作都可以</p>
+            <input type="file" id="fileInput" accept="video/*" hidden>
+            <button class="btn btn-primary" id="pickVideoBtn" style="margin-top:12px">选择视频文件</button>
+            <video id="videoPreview" hidden playsinline controls style="width:100%;border-radius:14px;margin-top:12px;background:#000"></video>
+            <p class="small" id="videoMeta" style="margin-top:8px"></p>
+          </div>
+
+          <div class="card" id="segCard" hidden>
+            <div class="row-between"><p class="title" style="font-size:16px">✂️ 分段</p>
+              <div style="display:flex;gap:8px;align-items:center"><input class="field num" id="splitCount" type="number" value="4" min="2" max="12"><button class="mini-btn" id="autoSplitBtn">平均切分</button></div>
+            </div>
+            <p class="sub" style="margin:8px 0">时间格式如 1:30；切好后点"开始分段跟练"</p>
+            <p class="sub" id="segEmpty">还没有分段，点"平均切分"或手动添加 👇</p>
+            <div id="segList" style="margin-top:10px"></div>
+            <button class="btn btn-ghost" id="segAddBtn" style="margin-top:6px">+ 手动添加分段</button>
+            <button class="btn btn-primary" id="startVideoBtn" hidden style="margin-top:10px">开始分段跟练 ▶</button>
+          </div>
+
+          <div class="card">
+            <p class="title" style="font-size:16px">📺 Bilibili 收藏</p>
+            <p class="sub">B 站视频先收藏在这里，一键跳转去看（暂不支持站内分段）</p>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <input class="field" id="bvInput" placeholder="粘贴B站链接或BV号" style="flex:1">
+              <button class="mini-btn" id="bvAdd" style="flex:none;padding:10px 18px">收藏</button>
+            </div>
+            <div id="bvList" style="margin-top:10px"></div>
+          </div>
+          <div class="card">
+            <p class="title" style="font-size:16px">🎵 我的音乐</p>
+            <p class="sub">给每种训练氛围绑自己的歌，不绑就用内置节拍（合成、无版权、可离线）</p>
+            <div id="audioBindList" style="margin-top:6px"></div>
+          </div>
+          <p class="safety-foot">只导入自己拍摄或有版权的视频 · B站视频请去官方观看，练伴不做下载破解</p>
+        </div>
+      </section>
+
+      <!-- 数据 -->
+      <section class="tab" id="tab-data">
+        <div class="wrap">
+          <h1 class="hello" style="font-size:22px">我的数据 📊</h1>
+          <p class="date-line">体重只是参考，围度和力量会先说话</p>
+
+          <div class="card">
+            <div class="row-between"><p class="title" style="font-size:16px">体重趋势</p><button class="mini-btn" id="addWeightBtn">+ 记录</button></div>
+            <p style="font-size:26px;font-weight:800;margin:6px 0"><span id="weightNow">51.0</span><small style="font-size:13px;color:var(--muted)"> kg · 近4周 <span id="weightDelta" class="trend down">-0.2</span></small></p>
+            <canvas class="chart" id="weightChart"></canvas>
+            <p class="sub" style="margin-top:8px">💛 体重没动也别慌，肌肉在悄悄生长，围度会先给你答案。</p>
+          </div>
+
+          <div class="card">
+            <div class="row-between"><p class="title" style="font-size:16px">围度记录</p><button class="mini-btn" id="addMeasBtn">+ 记录</button></div>
+            <div class="meas-grid" style="margin-top:12px">
+              <div class="meas"><b>68<small style="font-size:11px">cm</small></b><span>腰围</span><div class="trend down">▼0.5</div></div>
+              <div class="meas"><b>90<small style="font-size:11px">cm</small></b><span>臀围</span><div class="trend flat">— 持平</div></div>
+              <div class="meas"><b>52<small style="font-size:11px">cm</small></b><span>大腿围</span><div class="trend down">▼0.3</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <p class="title" style="font-size:16px;margin-bottom:12px">今日营养 🍼</p>
+            <div class="nutri-row">
+              <div class="nutri-emoji">💧</div>
+              <div class="nutri-info"><b>喝水</b><div class="progress" style="margin-top:6px"><i id="waterBar" style="width:55%"></i></div><span class="small" id="waterText">1100 / 2000 ml</span></div>
+              <button class="mini-btn" id="waterAdd">+250ml</button>
+            </div>
+            <div class="nutri-row">
+              <div class="nutri-emoji">🍗</div>
+              <div class="nutri-info"><b>蛋白质</b><div class="progress leaf" style="margin-top:6px"><i id="proteinBar" style="width:60%"></i></div><span class="small" id="proteinText">54 / 90 g</span></div>
+              <button class="mini-btn" id="proteinAdd">+10g</button>
+            </div>
+            <div class="nutri-row">
+              <div class="nutri-emoji">🦴</div>
+              <div class="nutri-info"><b>钙片</b><br><span class="small">哺乳期每天需要约1000mg钙</span></div>
+              <label class="checkbox-row"><input type="checkbox" id="calciumCheck"> 今日已补</label>
+            </div>
+          </div>
+
+          <div class="card">
+            <p class="title" style="font-size:16px;margin-bottom:6px">训练历史</p>
+            <div id="histList"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar">
+      <button class="on" data-tab="tab-home"><span class="ti">🏠</span>首页</button>
+      <button data-tab="tab-lib"><span class="ti">💪</span>动作库</button>
+      <button data-tab="tab-video"><span class="ti">🎬</span>视频</button>
+      <button data-tab="tab-data"><span class="ti">📊</span>数据</button>
+    </nav>
+  </div>
+
+  <!-- ============ 跟练播放器 ============ -->
+  <div id="player" hidden>
+    <div class="sheet">
+      <div class="pl-head"><span id="plStep">动作 1/7</span><button class="pl-close" id="plClose">✕</button></div>
+      <div class="pl-body">
+        <!-- 训练中 -->
+        <div id="workView">
+          <div class="demo-stage"><svg id="demoSvg" viewBox="0 0 200 160"></svg><p class="demo-hint">跟着动画的节奏，一起做 🎵</p></div>
+          <p class="pl-name" id="plName">原地踏步热身</p>
+          <p class="pl-set" id="plSetInfo">第 1 组 / 共 1 组</p>
+          <ul class="pl-cues" id="plCues"></ul>
+          <video id="plVideo" hidden playsinline style="width:100%;border-radius:16px;background:#000;max-height:230px"></video>
+          <div id="vProgWrap" hidden style="margin-top:10px">
+            <div class="progress coral"><i id="vProg" style="width:0%"></i></div>
+            <p class="row-between" style="margin-top:6px"><span class="small" id="vTime">0:00</span><span class="small" id="vDur">0:00</span></p>
+          </div>
+          <div class="ring-wrap" id="ringWrap">
+            <svg width="190" height="190" viewBox="0 0 190 190">
+              <defs><linearGradient id="gradRing" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#FF7E67"/><stop offset="1" stop-color="#EF5F45"/>
+              </linearGradient></defs>
+              <circle class="ring-bg" cx="95" cy="95" r="82"/>
+              <circle class="ring-fg" id="ringFg" cx="95" cy="95" r="82"/>
+            </svg>
+            <div class="ring-num"><b id="plTime">60</b><span>秒</span></div>
+          </div>
+          <div id="repsWrap" hidden>
+            <p class="reps-big"><span id="plRepsDone">0</span><span style="font-size:22px;color:var(--muted)"> / <span id="plRepsTarget">15</span></span> <small>次</small></p>
+            <p class="sub" style="text-align:center">动画完成一次 = 1次，跟着数拍走</p>
+          </div>
+          <div class="pl-controls">
+            <button class="btn btn-ghost" id="plPause">⏸ 暂停</button>
+            <button class="btn btn-ghost" id="plSkip">⏭ 跳过</button>
+          </div>
+          <button class="btn btn-primary" id="plDoneSet" hidden style="margin-top:10px">完成本组 ✓</button>
+          <div class="voice-row"><span>🔊 语音陪练（数拍 & 报时）</span><button class="switch on" id="voiceToggle" aria-label="语音开关"></button></div>
+          <div class="voice-row" id="musicRow"><span>🎵 动作配乐</span><button class="switch on" id="musicToggle" aria-label="音乐开关"></button></div>
+          <div class="voice-row" id="speedRow" hidden><span>🐢 慢放跟做</span><button class="mini-btn" id="speedBtn">1x</button></div>
+        </div>
+        <!-- 休息 -->
+        <div id="restView" hidden>
+          <div class="rest-emoji">💧</div>
+          <p class="pl-name">休息一下</p>
+          <div class="ring-wrap">
+            <svg width="190" height="190" viewBox="0 0 190 190">
+              <circle class="ring-bg" cx="95" cy="95" r="82"/>
+              <circle class="ring-fg" id="ringFg2" cx="95" cy="95" r="82" style="stroke:#7FB069"/>
+            </svg>
+            <div class="ring-num"><b id="restTime">30</b><span>秒 · 喝口水</span></div>
+          </div>
+          <div class="rest-next" id="restNext">接下来：臀桥 · 15次 × 3组</div>
+          <div class="pl-controls"><button class="btn btn-primary" id="restSkip">跳过休息 ⏭</button></div>
+        </div>
+        <!-- RPE 反馈 -->
+        <div id="rpeView" hidden>
+          <div class="rest-emoji">🎉</div>
+          <p class="pl-name">本轮结束！</p>
+          <p class="sub" style="text-align:center;margin:10px 0 4px">诚实一点，这对下次的计划很重要<br>（不会有人评判你 💛）</p>
+          <p class="ob-q" style="text-align:center">刚才感觉怎么样？</p>
+          <div class="rpe-btns">
+            <button class="rpe" data-rpe="easy"><span class="e">😌</span>轻松<br><small style="color:var(--muted)">还能再来一组</small></button>
+            <button class="rpe" data-rpe="ok"><span class="e">🙂</span>刚好<br><small style="color:var(--muted)">微微出汗</small></button>
+            <button class="rpe" data-rpe="hard"><span class="e">🥵</span>吃力<br><small style="color:var(--muted)">做到力竭了</small></button>
+          </div>
+        </div>
+        <!-- 小结 -->
+        <div id="summaryView" hidden>
+          <div class="rest-emoji">🌟</div>
+          <p class="pl-name">训练完成！</p>
+          <div class="sum-grid">
+            <div class="stat"><b id="sumTime">20<small style="font-size:11px;color:var(--muted)">分</small></b><span>用时</span></div>
+            <div class="stat"><b id="sumCount">7<small style="font-size:11px;color:var(--muted)">个</small></b><span>动作</span></div>
+            <div class="stat"><b id="sumKcal">70<small style="font-size:11px;color:var(--muted)">kcal</small></b><span>预估消耗</span></div>
+          </div>
+          <div class="adapt-card" id="adaptCard">📈 <b>下次建议：</b><span id="adaptText"></span></div>
+          <div class="enc-card" id="encCard"></div>
+        </div>
+      </div>
+      <div class="pl-foot" id="plFoot">
+        <p class="safety-foot">如有头晕、恶心、伤口不适请立刻停止 · 哺乳期训练量力而行</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="libModal" hidden>
+    <div class="modal" style="max-height:92dvh;overflow-y:auto">
+      <div id="libModalBody"></div>
+    </div>
+  </div>
+
+  <div class="build-bar" id="buildBar" hidden>
+    <b id="buildCount">已选 0 个动作</b>
+    <button class="btn btn-primary" id="buildGo" style="width:auto;padding:10px 22px;font-size:14px">生成跟练 ▶</button>
+  </div>
+
+  <audio id="userAudio" hidden></audio>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ================= 数据 ================= */
+/* 动作原子：演示 + 要领 + 进退阶 + 安全标签 + 多维属性 */
+const EXERCISES = [
+  {name:'原地踏步热身', emoji:'🚶‍♀️', demo:'march', kind:'time', work:60, sets:1, tag:'全身', lv:1, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:['产后安全'],
+   reg:'放慢摆臂幅度', prog:'换成高抬腿30秒',
+   cues:['手臂自然摆动','膝盖抬到舒服的高度','保持呼吸均匀，先把身体叫醒']},
+  {name:'开合跳', emoji:'🏃', demo:'march', kind:'time', work:30, sets:3, rest:20, tag:'全身', lv:2, impact:'中', equip:'徒手',
+   scen:['beginner','fatloss','muscle'], safe:[],
+   reg:'改回原地踏步', prog:'加快节奏，连做不停',
+   cues:['落地要轻，膝盖微屈缓冲','手臂向上击掌','保持呼吸节奏，别憋气']},
+  {name:'靠墙静蹲', emoji:'🧱', demo:'squat', kind:'time', work:40, sets:3, rest:30, tag:'臀腿', lv:1, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:['产后安全'],
+   reg:'蹲浅一点，角度小一点', prog:'延长到60秒一组',
+   cues:['后背贴紧墙面','大腿尽量与地面平行','膝盖不要超过脚尖','塌腰就停下来']},
+  {name:'徒手深蹲', emoji:'🏋️', demo:'squat', kind:'reps', reps:12, sets:3, rest:30, tag:'臀腿', lv:2, impact:'中', equip:'徒手',
+   scen:['beginner','fatloss','muscle','postpartum'], safe:[],
+   reg:'用靠墙静蹲代替', prog:'手持水瓶负重',
+   cues:['双脚与肩同宽','臀部向后坐，像坐椅子','膝盖对准脚尖方向']},
+  {name:'臀桥', emoji:'🍑', demo:'bridge', kind:'reps', reps:15, sets:3, rest:30, tag:'臀腿', lv:1, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:['产后安全','DRA安全'],
+   reg:'减小抬起幅度', prog:'试试单腿臀桥',
+   cues:['用臀部发力把身体顶起','顶峰收紧1秒再下放','下背不要塌腰借力']},
+  {name:'跪姿俯卧撑', emoji:'💪', demo:'pushup', kind:'reps', reps:10, sets:3, rest:30, tag:'上肢', lv:2, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:[],
+   reg:'幅度减半，量力而行', prog:'进阶到标准俯卧撑',
+   cues:['膝盖着地，身体一条直线','胸口贴近地面再推起','手肘微微内收']},
+  {name:'标准俯卧撑', emoji:'💪', demo:'pushup', kind:'reps', reps:8, sets:3, rest:30, tag:'上肢', lv:3, impact:'中', equip:'徒手',
+   scen:['fatloss','muscle'], safe:[],
+   reg:'退回跪姿俯卧撑', prog:'放慢下放速度，3秒下1秒上',
+   cues:['从头到脚一条直线','胸口贴近地面','核心全程收紧，塌腰就停']},
+  {name:'水瓶推举', emoji:'🍼', demo:'press', kind:'reps', reps:12, sets:3, rest:30, tag:'上肢', lv:1, impact:'低', equip:'小器械',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:[],
+   reg:'空手做同样动作', prog:'换更重的哑铃',
+   cues:['两只矿泉水瓶当哑铃','推到头顶不用完全锁死','全程核心收紧']},
+  {name:'哑铃侧平举', emoji:'🏋️', demo:'press', kind:'reps', reps:12, sets:3, rest:30, tag:'上肢', lv:2, impact:'低', equip:'小器械',
+   scen:['beginner','fatloss','muscle'], safe:[],
+   reg:'换水瓶推举', prog:'增加重量或放慢速度',
+   cues:['手臂微屈，抬到肩高即可','不要耸肩','下放时控制住别砸下来']},
+  {name:'跪姿平板支撑', emoji:'🧘', demo:'plank', kind:'time', work:30, sets:3, rest:30, tag:'核心', lv:2, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:['产后安全'],
+   reg:'时间减半，20秒也算', prog:'进阶到标准平板',
+   cues:['膝盖着地降低难度','肚脐向脊柱内收','腰一塌就停下休息，不硬撑']},
+  {name:'标准平板支撑', emoji:'🧘', demo:'plank', kind:'time', work:45, sets:3, rest:30, tag:'核心', lv:3, impact:'中', equip:'徒手',
+   scen:['fatloss','muscle'], safe:[],
+   reg:'退回跪姿平板', prog:'交替抬腿增加难度',
+   cues:['头到脚一条直线','肚脐内收，臀部夹紧','塌腰立刻停，别硬撑']},
+  {name:'死虫式', emoji:'🐛', demo:'deadbug', kind:'reps', reps:10, sets:3, rest:30, tag:'核心', lv:1, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:['产后安全','DRA安全'],
+   reg:'只动腿不动手', prog:'放慢速度，每次5秒',
+   cues:['下背紧贴地面，不能离地','对侧手脚同时伸出','呼气时发力，吸气还原']},
+  {name:'卷腹', emoji:'🔥', demo:'crunch', kind:'reps', reps:15, sets:3, rest:30, tag:'核心', lv:2, impact:'低', equip:'徒手',
+   scen:['beginner','fatloss','muscle'], safe:['DRA不安全'],
+   reg:'减小卷起幅度', prog:'放慢节奏，顶峰停2秒',
+   cues:['下巴微收，别拽脖子','用腹肌卷起上背','下背不要离开地面太多']},
+  {name:'全身拉伸放松', emoji:'🌿', demo:'stretch', kind:'time', work:60, sets:1, tag:'放松', lv:1, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:[],
+   reg:'', prog:'',
+   cues:['哪里紧就在哪里多停留','配合深呼吸慢慢放松','好好谢谢今天的自己']},
+  {name:'肩颈放松', emoji:'💆', demo:'stretch', kind:'time', work:60, sets:2, rest:15, tag:'放松', lv:1, impact:'低', equip:'徒手',
+   scen:['postpartum','beginner','fatloss','muscle','office'], safe:[],
+   reg:'', prog:'',
+   cues:['缓慢绕肩，向前向后各10圈','颈部左右轻拉伸，每侧15秒','配合深呼吸，松开咬紧的牙关']},
+];
+/* 场景：产后只是其中之一 */
+const SCENARIOS = {
+  postpartum:{name:'产后恢复', emoji:'🍼', desc:'温和重建核心与盆底，奶水优先'},
+  beginner:{name:'新手入门', emoji:'🌱', desc:'低冲击起步，先完成再完美'},
+  fatloss:{name:'减脂燃脂', emoji:'🔥', desc:'提高心率，动起来就是胜利'},
+  muscle:{name:'塑形增肌', emoji:'💪', desc:'渐进超负荷，雕刻线条'},
+  office:{name:'办公拉伸', emoji:'🪑', desc:'碎片时间，松松肩颈充充电'},
+};
+/* 每个场景的今日推荐课 */
+const COURSES = {
+  postpartum:{title:'全身唤醒 · 跟练', emoji:'🍑', pills:['哺乳期友好','塑形'], list:['原地踏步热身','靠墙静蹲','臀桥','跪姿俯卧撑','水瓶推举','跪姿平板支撑','全身拉伸放松']},
+  beginner:{title:'新手激活 · 跟练', emoji:'🌱', pills:['低冲击','全身'], list:['原地踏步热身','靠墙静蹲','臀桥','水瓶推举','死虫式','肩颈放松']},
+  fatloss:{title:'燃脂循环 · 跟练', emoji:'🔥', pills:['燃脂','循环'], list:['开合跳','徒手深蹲','标准俯卧撑','臀桥','标准平板支撑','全身拉伸放松']},
+  muscle:{title:'塑形力量 · 跟练', emoji:'💪', pills:['增肌','塑形'], list:['徒手深蹲','标准俯卧撑','哑铃侧平举','臀桥','标准平板支撑','死虫式']},
+  office:{title:'工位松绑 · 跟练', emoji:'🪑', pills:['拉伸','碎片'], list:['原地踏步热身','肩颈放松','水瓶推举','靠墙静蹲','全身拉伸放松']},
+};
+/* 火柴人演示动画：每个动作一个 SVG，动画周期 = 1次动作的节奏 */
+const CN_NUM = ['零','一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十'];
+const DEMOS = {
+march: `<line x1="14" y1="142" x2="186" y2="142" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>
+<g class="fig" style="animation:bob 1s ease-in-out infinite">
+<circle class="fig-head" cx="100" cy="26" r="13"/>
+<line x1="100" y1="42" x2="100" y2="92"/>
+<line class="limb" style="transform-origin:top center;animation:swingB 1s ease-in-out infinite" x1="91" y1="54" x2="91" y2="88"/>
+<line class="limb" style="transform-origin:top center;animation:swingA 1s ease-in-out infinite" x1="109" y1="54" x2="109" y2="88"/>
+<line class="limb" style="transform-origin:top center;animation:swingA 1s ease-in-out infinite" x1="93" y1="92" x2="93" y2="134"/>
+<line class="limb" style="transform-origin:top center;animation:swingB 1s ease-in-out infinite" x1="107" y1="92" x2="107" y2="134"/>
+</g>`,
+squat: `<rect x="16" y="18" width="10" height="122" rx="5" fill="#E4D8CB"/>
+<g class="fig" style="animation:tremble .3s linear infinite">
+<circle class="fig-head" cx="58" cy="40" r="13"/>
+<line x1="58" y1="56" x2="72" y2="90"/>
+<line x1="72" y1="90" x2="110" y2="90"/>
+<line x1="110" y1="90" x2="110" y2="134"/>
+<line x1="70" y1="64" x2="46" y2="86"/>
+</g>
+<line x1="14" y1="140" x2="186" y2="140" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>`,
+bridge: `<line x1="14" y1="134" x2="186" y2="134" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>
+<g id="repAnim" style="transform-box:view-box;transform-origin:58px 122px;animation:lift 2.2s ease-in-out infinite">
+<circle class="fig-head" cx="40" cy="112" r="12"/>
+<line class="fig" x1="52" y1="120" x2="112" y2="112"/>
+<line class="fig" x1="112" y1="112" x2="142" y2="126"/>
+<line class="fig" x1="142" y1="126" x2="158" y2="132"/>
+</g>`,
+pushup: `<line x1="14" y1="136" x2="186" y2="136" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>
+<line class="fig" x1="88" y1="132" x2="64" y2="136"/>
+<g id="repAnim" style="transform-box:view-box;transform-origin:88px 132px;animation:pivot 2.4s ease-in-out infinite">
+<circle class="fig-head" cx="148" cy="94" r="12"/>
+<line class="fig" x1="138" y1="102" x2="92" y2="128"/>
+<line class="fig" x1="126" y1="110" x2="118" y2="134"/>
+</g>`,
+press: `<g class="fig">
+<circle class="fig-head" cx="100" cy="26" r="13"/>
+<line x1="100" y1="42" x2="100" y2="96"/>
+<line x1="100" y1="96" x2="100" y2="136"/>
+<g id="repAnim" class="limb" style="transform-origin:top center;animation:pressL 2s ease-in-out infinite">
+<line x1="88" y1="54" x2="88" y2="92"/>
+<circle cx="88" cy="97" r="6.5" fill="#FFB627" stroke="#3B3330" stroke-width="4"/>
+</g>
+<g class="limb" style="transform-origin:top center;animation:pressR 2s ease-in-out infinite">
+<line x1="112" y1="54" x2="112" y2="92"/>
+<circle cx="112" cy="97" r="6.5" fill="#FFB627" stroke="#3B3330" stroke-width="4"/>
+</g>
+</g>
+<line x1="14" y1="142" x2="186" y2="142" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>`,
+plank: `<line x1="14" y1="136" x2="186" y2="136" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>
+<g class="fig" style="animation:breathe 4s ease-in-out infinite">
+<circle class="fig-head" cx="152" cy="94" r="12"/>
+<line x1="142" y1="102" x2="96" y2="124"/>
+<line x1="118" y1="112" x2="112" y2="136"/>
+<line x1="96" y1="124" x2="72" y2="136"/>
+</g>`,
+stretch: `<line x1="14" y1="142" x2="186" y2="142" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>
+<g class="fig" style="transform-box:view-box;transform-origin:100px 140px;animation:sway 4.5s ease-in-out infinite">
+<circle class="fig-head" cx="100" cy="26" r="13"/>
+<line x1="100" y1="42" x2="100" y2="96"/>
+<line x1="100" y1="96" x2="100" y2="138"/>
+<line x1="100" y1="54" x2="74" y2="16"/>
+<line x1="100" y1="54" x2="126" y2="16"/>
+</g>`,
+crunch: `<line x1="14" y1="132" x2="186" y2="132" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>
+<line class="fig" x1="100" y1="122" x2="140" y2="122"/>
+<line class="fig" x1="140" y1="122" x2="140" y2="92"/>
+<g id="repAnim" style="transform-box:view-box;transform-origin:100px 122px;animation:crunch 2.2s ease-in-out infinite">
+<circle class="fig-head" cx="72" cy="106" r="12"/>
+<line class="fig" x1="82" y1="114" x2="104" y2="120"/>
+</g>`,
+deadbug: `<line x1="14" y1="134" x2="186" y2="134" stroke="#E4D8CB" stroke-width="6" stroke-linecap="round"/>
+<g class="fig">
+<circle class="fig-head" cx="42" cy="120" r="12"/>
+<line x1="54" y1="124" x2="110" y2="124"/>
+<line id="repAnim" class="limb" style="transform-origin:bottom center;animation:swingA 2.4s ease-in-out infinite" x1="128" y1="76" x2="128" y2="118"/>
+<line class="limb" style="transform-origin:bottom center;animation:swingB 2.4s ease-in-out infinite" x1="156" y1="82" x2="156" y2="120"/>
+</g>`
+};
+function renderDemoTo(id, type){
+  const el=document.getElementById(id); if(el) el.innerHTML = DEMOS[type]||'';
+}
+function renderDemo(type){
+  renderDemoTo('demoSvg', type);
+  const st = document.querySelector('.demo-stage');
+  if(st) st.classList.remove('paused');
+}
+const TIPS = [
+  '训练前记得喝一大杯水，哺乳期出汗多，补水比补练更重要。',
+  '喂完奶再练会更舒服，记得穿支撑好的运动内衣。',
+  '不需要节食！奶水和营养是第一位的，吃够才是对的。',
+  '宝宝睡着的碎片时间练 15 分钟，效果远超周末突击 2 小时。',
+  '练后 30 分钟内吃点蛋白质和碳水，比如鸡蛋+香蕉，恢复更快。',
+  '体重秤没动？别慌，肌肉在悄悄生长，围度会先给你答案。',
+];
+const ENCS = [
+  '宝宝午睡的这段时间，你全部留给了自己。<b>这很了不起。</b>',
+  '你不需要和任何人比，只需要比昨天的自己多动了一点点。<b>今天做到了。</b>',
+  '带娃已经是一项极限运动了，你还 extra 练了一场。<b>给自己点个赞吧。</b>',
+  '每一次出现都在给未来的自己投票。<b>今天这一票，投得漂亮。</b>',
+];
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('lianban_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('lianban_'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ================= 问候 & 小组件 ================= */
+function greeting(){
+  const h = new Date().getHours();
+  const t = h<6?'夜深了':h<12?'上午好':h<14?'中午好':h<18?'下午好':'晚上好';
+  document.getElementById('greetTime').textContent = t + '，妈妈';
+  const d = new Date();
+  document.getElementById('dateLine').textContent =
+    (d.getMonth()+1)+'月'+d.getDate()+'日 星期'+'日一二三四五六'[d.getDay()] + ' · 今天也要温柔地对待自己';
+  document.getElementById('tipText').textContent = TIPS[Math.floor(Math.random()*TIPS.length)];
+  // 本周打卡
+  const done = [1,1,0,1,1,0,0]; // 原型示例数据
+  const names = ['一','二','三','四','五','六','日'];
+  const box = document.getElementById('weekDots'); box.innerHTML='';
+  const today = (d.getDay()+6)%7;
+  done.forEach((v,i)=>{
+    const el = document.createElement('div');
+    el.className = 'dot'+(v?' done':'')+(i===today?' today':'');
+    el.textContent = names[i]; box.appendChild(el);
+  });
+  const n = done.filter(Boolean).length;
+  document.getElementById('weekCount').textContent = '本周已练 '+n+' 次';
+  document.getElementById('streakText').textContent = '🔥 已连续打卡 5 天——习惯正在长成，别小看每一次出现。';
+}
+function toast(msg){
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ================= 开屏问卷 ================= */
+const answers = {};
+let obStep = 1;
+document.querySelectorAll('#screen-onboard .chips').forEach(group=>{
+  group.addEventListener('click', e=>{
+    const c = e.target.closest('.chip'); if(!c) return;
+    group.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+    answers[group.dataset.q] = c.dataset.v;
+  });
+});
+/* 场景联动：只有选产后恢复才出现产后专属问题 */
+document.querySelector('[data-q="scenario"]').addEventListener('click', e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  const pp=c.dataset.v==='postpartum';
+  document.getElementById('ppExtra').hidden=!pp;
+  document.getElementById('ppClear').hidden=!pp;
+  if(!pp){
+    ['babyAge','birth','cleared'].forEach(k=>delete answers[k]);
+    document.querySelectorAll('#ppExtra .chip, #ppClear .chip').forEach(x=>x.classList.remove('on'));
+  }
+});
+const OB_NOTES={
+  postpartum:'🍼 哺乳期小提醒：训练不需要节食，奶水和营养是第一位的；练前练后记得喝水，喂完奶再练会更舒服。如有任何不适请停下来，必要时咨询医生。',
+  beginner:'🌱 新手小提醒：前两周以"完成"为目标，别追求强度；肌肉酸痛 2-3 天很正常，疼就休息。',
+  fatloss:'🔥 减脂小提醒：训练只占三成，吃和睡占七成；别靠饿，掉肌肉比掉秤更可惜。',
+  muscle:'💪 增肌小提醒：蛋白吃够、动作做标准比上重量重要；同一部位隔天再练，给肌肉恢复时间。',
+  office:'🪑 久坐小提醒：每小时起来活动 2 分钟，效果不输一次长训练；肩颈僵硬是身体在报警。'
+};
+function paintSteps(){
+  document.querySelectorAll('.ob-steps i').forEach((el,i)=>el.classList.toggle('on', i<obStep));
+  document.querySelectorAll('.ob-panel').forEach(p=>p.hidden = +p.dataset.panel!==obStep);
+  document.getElementById('obNext').textContent = obStep===3 ? '生成我的计划 ✨' : '下一步';
+  document.getElementById('obNote').textContent = OB_NOTES[answers.scenario]||OB_NOTES.beginner;
+}
+document.getElementById('obNext').onclick = ()=>{
+  const pp = answers.scenario==='postpartum';
+  const need = obStep===1 ? (pp?['scenario','babyAge','birth']:['scenario'])
+    : obStep===2 ? (pp?['cleared','base']:['base'])
+    : ['minutes','equip'];
+  if(need.some(k=>!(k in answers))){ toast('选一下再继续吧～'); return; }
+  if(obStep<3){ obStep++; paintSteps(); }
+  else{
+    store.set('profile', answers);
+    enterApp();
+    toast('计划生成好啦，去首页看看吧 ✨');
+  }
+};
+document.getElementById('obSkip').onclick = ()=>{ store.set('profile', {skipped:true}); enterApp(); };
+function enterApp(){
+  document.getElementById('screen-onboard').hidden = true;
+  document.getElementById('app').hidden = false;
+  const p = store.get('profile', {});
+  const sc = p.scenario||'postpartum';
+  const S = SCENARIOS[sc]||SCENARIOS.postpartum;
+  document.getElementById('scenSwitch').textContent = S.emoji+' '+S.name+' · 切换';
+  const pp = sc==='postpartum';
+  document.getElementById('safetyBanner').hidden = !(pp && (p.cleared==='no'||p.cleared==='notyet'));
+  renderCourse();
+  greeting(); renderLib(); renderHist(); drawChart();
+  window.scrollTo(0,0);
+}
+function exSec(ex){ return ex.kind==='time' ? ex.work*ex.sets + (ex.rest||0)*ex.sets : ex.reps*3*ex.sets + (ex.rest||0)*ex.sets; }
+function renderCourse(){
+  const sc=(store.get('profile',{}).scenario)||'postpartum';
+  const c=COURSES[sc]||COURSES.postpartum;
+  const list=courseList();
+  document.getElementById('courseEmoji').textContent=c.emoji;
+  document.getElementById('courseTitle').textContent=c.title;
+  document.getElementById('courseDesc').textContent=(SCENARIOS[sc]||SCENARIOS.postpartum).desc;
+  document.getElementById('coursePills').innerHTML=c.pills.map(t=>'<span class="pill">'+t+'</span>').join('');
+  const mins=Math.max(5,Math.round(list.reduce((a,e)=>a+exSec(e),0)/60));
+  document.getElementById('courseMeta').innerHTML=
+    '<span class="pill">⏱ 约'+mins+'分钟</span>'+
+    '<span class="pill">🏋️ '+list.length+'个动作</span>'+
+    '<span class="pill">🔥 约'+Math.round(mins*3.5)+'kcal</span>';
+}
+document.getElementById('scenSwitch').onclick=()=>{
+  if(!confirm('切换场景会重新走一遍问卷，确定吗？')) return;
+  store.set('profile', null);
+  Object.keys(answers).forEach(k=>delete answers[k]);
+  document.querySelectorAll('#screen-onboard .chip').forEach(x=>x.classList.remove('on'));
+  document.getElementById('ppExtra').hidden=true;
+  document.getElementById('ppClear').hidden=true;
+  obStep=1; paintSteps();
+  document.getElementById('app').hidden=true;
+  document.getElementById('screen-onboard').hidden=false;
+  window.scrollTo(0,0);
+};
+/* 当天自适应：一键降载 */
+document.getElementById('adaptChips').addEventListener('click', e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  const sc=(store.get('profile',{}).scenario)||'postpartum';
+  const pool=EXERCISES.filter(x=>x.scen.includes(sc));
+  let pick=[], title='';
+  if(b.dataset.ad==='fast'){ pick=pool.slice(0,4); title='⚡ 10分钟快充 · 跟练'; }
+  if(b.dataset.ad==='quiet'){ pick=pool.filter(x=>x.impact==='低').slice(0,5); title='🤫 安静跟练 · 不打扰宝宝'; }
+  if(b.dataset.ad==='easy'){ pick=pool.filter(x=>x.lv===1).slice(0,5); title='😮‍💨 轻松恢复 · 跟练'; }
+  if(!pick.length) pick=pool.slice(0,4);
+  const list=pick.map(x=>Object.assign({}, x, {sets:1}));
+  buildQueueFrom(list); P.mode='anim'; Music.ensure();
+  launchPlayer(title);
+});
+
+/* ================= 底部导航 ================= */
+document.querySelectorAll('.tabbar button').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.tabbar button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.id===b.dataset.tab));
+    window.scrollTo(0,0);
+  };
+});
+
+/* ================= 动作库 ================= */
+/* ================= 动作库：筛选 + 搜索 + 详情 + 自建跟练 ================= */
+const LF={q:'', part:'全部', lv:'全部', safeOnly:true};
+let selectMode=false; const selected=new Set();
+const LV_NAME={1:'新手友好',2:'进阶',3:'挑战'};
+function scenExs(){
+  const sc=(store.get('profile',{}).scenario)||'postpartum';
+  return LF.safeOnly ? EXERCISES.filter(e=>e.scen.includes(sc)) : EXERCISES.slice();
+}
+function renderLib(){
+  const box=document.getElementById('libList'); box.innerHTML='';
+  const sc=(store.get('profile',{}).scenario)||'postpartum';
+  const S=SCENARIOS[sc]||SCENARIOS.postpartum;
+  document.getElementById('safeNote').textContent = LF.safeOnly
+    ? '🛡️ 已按【'+S.name+'】过滤安全动作' : '👁 已显示全部动作（含高阶/非本场景）';
+  document.getElementById('libSub').textContent='共 '+EXERCISES.length+' 个动作 · 点开看演示、要领与进退阶';
+  let list=scenExs();
+  if(LF.part!=='全部') list=list.filter(e=>e.tag===LF.part);
+  if(LF.lv!=='全部') list=list.filter(e=>e.lv===+LF.lv);
+  if(LF.q) list=list.filter(e=>e.name.indexOf(LF.q)>=0);
+  if(!list.length) box.innerHTML='<p class="sub" style="text-align:center;padding:20px">没有符合条件的动作，换个筛选试试～</p>';
+  list.forEach(ex=>{
+    const row=document.createElement('div');
+    row.className='lib-row'+(selected.has(ex.name)?' sel':'');
+    row.dataset.name=ex.name;
+    const safe=(ex.safe||[]).map(s=>'<span class="safe-pill'+(s.indexOf('不安全')>=0?' warn':'')+'">'+s+'</span>').join('');
+    row.innerHTML='<div class="lib-top"><div class="sel-dot"></div><div class="lib-emoji">'+ex.emoji+'</div>'+
+      '<div style="flex:1"><div class="lib-name">'+ex.name+'</div>'+
+      '<div class="lib-tags"><span class="pill">'+ex.tag+'</span><span class="pill blue">'+LV_NAME[ex.lv]+'</span>'+
+      '<span class="pill green">'+ex.impact+'冲击</span></div>'+
+      (safe?'<div class="lib-tags">'+safe+'</div>':'')+
+      '</div><div class="stars">'+'★'.repeat(ex.lv)+'☆'.repeat(3-ex.lv)+'</div></div>';
+    row.onclick=()=>{
+      if(selectMode){
+        selected.has(ex.name)?selected.delete(ex.name):selected.add(ex.name);
+        row.classList.toggle('sel', selected.has(ex.name));
+        paintBuildBar();
+      }else openDetail(ex);
+    };
+    box.appendChild(row);
+  });
+  box.classList.toggle('selecting', selectMode);
+  paintBuildBar();
+}
+function paintBuildBar(){
+  const n=selected.size;
+  document.getElementById('buildBar').hidden = !(selectMode && n>0);
+  document.getElementById('buildCount').textContent='已选 '+n+' 个动作';
+}
+document.getElementById('selModeBtn').onclick=e=>{
+  selectMode=!selectMode;
+  e.target.textContent=selectMode?'完成':'自建跟练';
+  if(!selectMode) selected.clear();
+  renderLib();
+};
+document.getElementById('buildGo').onclick=()=>{
+  const list=[...selected].map(n=>EXERCISES.find(e=>e.name===n)).filter(Boolean);
+  if(!list.length) return;
+  selectMode=false; selected.clear();
+  document.getElementById('selModeBtn').textContent='自建跟练';
+  renderLib();
+  buildQueueFrom(list); P.mode='anim'; Music.ensure();
+  launchPlayer('自建跟练 · '+list.length+'个动作');
+};
+function bindFilter(id, key){
+  document.getElementById(id).addEventListener('click', e=>{
+    const c=e.target.closest('.chip'); if(!c) return;
+    e.currentTarget.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+    LF[key]=c.dataset.v; renderLib();
+  });
+}
+bindFilter('fPart','part'); bindFilter('fLv','lv');
+document.getElementById('libSearch').addEventListener('input', e=>{ LF.q=e.target.value.trim(); renderLib(); });
+document.getElementById('safeToggle').onclick=e=>{
+  LF.safeOnly=!LF.safeOnly;
+  e.target.classList.toggle('on', LF.safeOnly);
+  renderLib();
+};
+/* 动作详情：动画演示 + 要领 + 进退阶 + 安全 */
+function openDetail(ex){
+  const unit=ex.kind==='time'?ex.work+'秒 × '+ex.sets+'组':ex.reps+'次 × '+ex.sets+'组';
+  const safe=(ex.safe||[]).map(s=>'<span class="safe-pill'+(s.indexOf('不安全')>=0?' warn':'')+'">'+s+'</span>').join(' ');
+  const hasWarn=(ex.safe||[]).some(s=>s.indexOf('不安全')>=0);
+  document.getElementById('libModalBody').innerHTML=
+    '<div class="row-between"><p class="title">'+ex.name+'</p><button class="pl-close" id="libModalX">✕</button></div>'+
+    '<div class="meta"><span class="pill">'+ex.tag+'</span><span class="pill blue">'+LV_NAME[ex.lv]+'</span>'+
+    '<span class="pill green">'+ex.impact+'冲击</span><span class="pill">'+unit+'</span><span class="pill">'+ex.equip+'</span></div>'+
+    (safe?'<div class="meta">'+safe+'</div>':'')+
+    '<div class="modal-demo"><svg id="modalDemo" viewBox="0 0 200 160"></svg></div>'+
+    '<p class="eyebrow">动作要领</p><ul class="pl-cues">'+ex.cues.map(c=>'<li>'+c+'</li>').join('')+'</ul>'+
+    (ex.reg?'<div class="adapt-card">⬇️ <b>退阶：</b>'+ex.reg+'</div>':'')+
+    (ex.prog?'<div class="enc-card">⬆️ <b>进阶：</b>'+ex.prog+'</div>':'')+
+    (hasWarn?'<p class="small" style="color:#C2502F;margin-bottom:12px">⚠️ 该动作对腹直肌分离未恢复者不友好，已在产后场景中自动过滤。</p>':'')+
+    '<div class="btn-row"><button class="btn btn-ghost" id="mAdd">＋ 加入清单</button><button class="btn btn-primary" id="mGo">开始跟练 ▶</button></div>';
+  renderDemoTo('modalDemo', ex.demo);
+  const modal=document.getElementById('libModal');
+  const close=()=>{ modal.hidden=true; const md=document.getElementById('modalDemo'); if(md) md.innerHTML=''; };
+  modal.hidden=false;
+  document.getElementById('libModalX').onclick=close;
+  document.getElementById('mAdd').onclick=()=>{ selected.add(ex.name); close(); toast('已加入自建清单 💪'); };
+  document.getElementById('mGo').onclick=()=>{ close(); buildQueueFrom([ex]); P.mode='anim'; Music.ensure(); launchPlayer(ex.name+' · 单动作跟练'); };
+}
+document.getElementById('libModal').addEventListener('click', e=>{
+  if(e.target.id==='libModal'){ e.target.hidden=true; const md=document.getElementById('modalDemo'); if(md) md.innerHTML=''; }
+});
+
+/* ================= 数据页 ================= */
+function drawChart(){
+  const cv = document.getElementById('weightChart');
+  const dpr = window.devicePixelRatio||1;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w*dpr; cv.height = h*dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr,dpr);
+  const data = store.get('weights', [51.4,51.2,51.1,51.0]);
+  const labels = ['4周前','3周前','2周前','本周'];
+  const min = Math.min(...data)-0.3, max = Math.max(...data)+0.3;
+  const px = i=> 30 + i*(w-60)/(data.length-1);
+  const py = v=> h-24 - (v-min)/(max-min)*(h-56);
+  ctx.strokeStyle='#F1E7DD'; ctx.lineWidth=1;
+  for(let g=0; g<4; g++){ const y=16+g*(h-56)/3; ctx.beginPath(); ctx.moveTo(24,y); ctx.lineTo(w-8,y); ctx.stroke(); }
+  const grad = ctx.createLinearGradient(0,0,w,0); grad.addColorStop(0,'#FF7E67'); grad.addColorStop(1,'#EF5F45');
+  ctx.strokeStyle=grad; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.beginPath();
+  data.forEach((v,i)=> i?ctx.lineTo(px(i),py(v)):ctx.moveTo(px(i),py(v)));
+  ctx.stroke();
+  ctx.fillStyle='#FF7E67';
+  data.forEach((v,i)=>{ ctx.beginPath(); ctx.arc(px(i),py(v),5,0,7); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px(i),py(v),2.2,0,7); ctx.fill(); ctx.fillStyle='#FF7E67'; });
+  ctx.fillStyle='#A2938A'; ctx.font='11px sans-serif'; ctx.textAlign='center';
+  labels.forEach((l,i)=>ctx.fillText(l, px(i), h-6));
+  document.getElementById('weightNow').textContent = data[data.length-1].toFixed(1);
+  const d = data[data.length-1]-data[0];
+  const el = document.getElementById('weightDelta');
+  el.textContent = (d<=0?'':'＋')+d.toFixed(1);
+  el.className = 'trend '+(d<0?'down':'flat');
+  document.getElementById('statWeight').innerHTML = data[data.length-1].toFixed(1)+'<small style="font-size:11px;color:var(--muted)">kg</small>';
+}
+document.getElementById('addWeightBtn').onclick = ()=>{
+  const v = parseFloat(prompt('今日体重（kg）：','51.0'));
+  if(!v||v<30||v>150){ if(v!==null&&!isNaN(v)) toast('这个数字不太对，再确认下～'); return; }
+  const arr = store.get('weights',[51.4,51.2,51.1,51.0]); arr.push(Math.round(v*10)/10);
+  store.set('weights', arr.slice(-8)); drawChart(); toast('已记录，坚持就是胜利 💪');
+};
+document.getElementById('addMeasBtn').onclick = ()=>toast('原型演示：围度录入页开发中…');
+/* 营养 */
+let water = store.get('water', {ml:1100, day:new Date().toDateString()});
+if(water.day!==new Date().toDateString()) water={ml:0,day:new Date().toDateString()};
+function paintWater(){
+  document.getElementById('waterBar').style.width = Math.min(100, water.ml/2000*100)+'%';
+  document.getElementById('waterText').textContent = water.ml+' / 2000 ml';
+}
+let protein = store.get('protein', {g:54, day:new Date().toDateString()});
+if(protein.day!==new Date().toDateString()) protein={g:0,day:new Date().toDateString()};
+function paintProtein(){
+  document.getElementById('proteinBar').style.width = Math.min(100, protein.g/90*100)+'%';
+  document.getElementById('proteinText').textContent = protein.g+' / 90 g';
+}
+document.getElementById('waterAdd').onclick = ()=>{ water.ml+=250; store.set('water',water); paintWater(); if(water.ml>=2000) toast('今日饮水达标！🎉'); };
+document.getElementById('proteinAdd').onclick = ()=>{ protein.g+=10; store.set('protein',protein); paintProtein(); };
+document.getElementById('calciumCheck').onchange = e=>toast(e.target.checked?'钙片打卡成功 🦴':'取消了打卡');
+paintWater(); paintProtein();
+/* 历史 */
+function renderHist(){
+  const hist = store.get('hist', [
+    {d:'10月5日', t:'全身唤醒 · 跟练', m:'20分钟', r:'🙂 刚好'},
+    {d:'10月4日', t:'全身唤醒 · 跟练', m:'20分钟', r:'😌 轻松'},
+    {d:'10月2日', t:'臀腿专注 · 跟练', m:'15分钟', r:'🥵 吃力'},
+  ]);
+  const box = document.getElementById('histList'); box.innerHTML='';
+  hist.slice(0,6).forEach(h=>{
+    const row = document.createElement('div'); row.className='hist-row';
+    row.innerHTML = '<div class="hist-emoji">🏋️</div><div style="flex:1"><b>'+h.t+'</b><span class="small">'+h.d+' · '+h.m+'</span></div><span>'+h.r+'</span>';
+    box.appendChild(row);
+  });
+}
+
+/* ================= 视频导入 & 分段跟练 ================= */
+function fmt(sec){ sec=Math.max(0,Math.round(sec)); return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'); }
+function parseT(s){ s=String(s).trim(); if(/^\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+  const m=s.match(/^(?:(\d+):)?([0-5]?\d)$/); if(!m) return NaN;
+  return (m[1]?+m[1]*60:0)+(+m[2]); }
+function goTab(id){
+  document.querySelectorAll('.tabbar button').forEach(x=>x.classList.toggle('on', x.dataset.tab===id));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.id===id));
+  window.scrollTo(0,0);
+}
+document.getElementById('goVideoCard').onclick=()=>goTab('tab-video');
+
+const V = { file:null, url:null, duration:0, segs:[] };
+const fileInput=document.getElementById('fileInput');
+document.getElementById('pickVideoBtn').onclick=()=>fileInput.click();
+fileInput.onchange=()=>{
+  const f=fileInput.files[0]; if(!f) return;
+  if(V.url) URL.revokeObjectURL(V.url);
+  V.file=f; V.url=URL.createObjectURL(f); V.segs=[];
+  const pv=document.getElementById('videoPreview'); pv.src=V.url; pv.hidden=false;
+  pv.onloadedmetadata=()=>{
+    V.duration=pv.duration||0;
+    document.getElementById('videoMeta').textContent='时长 '+fmt(V.duration)+' · '+(f.size/1048576).toFixed(1)+'MB · 仅本次会话有效，关闭页面需重新导入';
+    document.getElementById('segCard').hidden=false;
+    renderSegs();
+  };
+};
+function renderSegs(){
+  const box=document.getElementById('segList'); box.innerHTML='';
+  V.segs.forEach((sg,i)=>{
+    const row=document.createElement('div'); row.className='seg-row'; row.dataset.i=i;
+    const safeName=String(sg.name).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    row.innerHTML='<input class="field seg-name" value="'+safeName+'">'+
+      '<div class="seg-times"><input class="field seg-start" value="'+fmt(sg.start)+'"><span>→</span><input class="field seg-end" value="'+fmt(sg.end)+'"></div>'+
+      '<div class="seg-times"><label class="small">组数 <input class="field num seg-sets" type="number" min="1" value="'+sg.sets+'"></label>'+
+      '<label class="small">休息 <input class="field num seg-rest" type="number" min="0" value="'+sg.rest+'">s</label>'+
+      '<label class="small">配乐 <select class="field seg-style" style="width:auto;padding:8px 6px">'+
+        ['strength','warmup','hold','stretch'].map(k=>'<option value="'+k+'"'+(sg.style===k?' selected':'')+'>'+Music.STYLES[k].label+'</option>').join('')+
+      '</select></label>'+
+      '<button class="mini-btn seg-del">删除</button></div>';
+    box.appendChild(row);
+  });
+  document.getElementById('startVideoBtn').hidden = V.segs.length===0;
+  document.getElementById('segEmpty').style.display = V.segs.length?'none':'';
+}
+document.getElementById('segList').addEventListener('change', e=>{
+  const row=e.target.closest('.seg-row'); if(!row) return;
+  const sg=V.segs[+row.dataset.i]; if(!sg) return;
+  const c=e.target.classList;
+  if(c.contains('seg-name')) sg.name=e.target.value.trim()||sg.name;
+  if(c.contains('seg-start')){ const v=parseT(e.target.value); if(!isNaN(v)) sg.start=Math.min(Math.max(0,v),V.duration); e.target.value=fmt(sg.start); }
+  if(c.contains('seg-end')){ const v=parseT(e.target.value); if(!isNaN(v)) sg.end=Math.min(Math.max(0,v),V.duration); e.target.value=fmt(sg.end); }
+  if(sg.end<=sg.start) sg.end=Math.min(V.duration, sg.start+30);
+  if(c.contains('seg-sets')) sg.sets=Math.max(1, parseInt(e.target.value)||1);
+  if(c.contains('seg-rest')) sg.rest=Math.max(0, parseInt(e.target.value)||0);
+  if(c.contains('seg-style')) sg.style=e.target.value;
+});
+document.getElementById('segList').addEventListener('click', e=>{
+  if(!e.target.classList.contains('seg-del')) return;
+  const row=e.target.closest('.seg-row'); V.segs.splice(+row.dataset.i,1); renderSegs();
+});
+document.getElementById('segAddBtn').onclick=()=>{
+  V.segs.push({name:'分段'+(V.segs.length+1), start:0, end:Math.min(60,V.duration), sets:1, rest:30, style:'strength'});
+  renderSegs();
+};
+document.getElementById('autoSplitBtn').onclick=()=>{
+  if(!V.duration){ toast('先导入视频～'); return; }
+  const n=Math.max(2, Math.min(12, parseInt(document.getElementById('splitCount').value)||4));
+  V.segs=[]; const len=V.duration/n;
+  for(let i=0;i<n;i++) V.segs.push({name:'分段'+(i+1), start:Math.round(len*i), end:Math.round(len*(i+1)), sets:1, rest:30, style:'strength'});
+  renderSegs(); toast('已切成 '+n+' 段 ✂️');
+};
+document.getElementById('speedBtn').onclick=e=>{
+  P.speed = P.speed===1 ? 0.75 : 1;
+  e.target.textContent = P.speed+'x';
+  const vv=document.getElementById('plVideo'); if(vv) vv.playbackRate=P.speed;
+  toast(P.speed===1?'正常速度':'0.75x 慢放，慢慢来 🐢');
+};
+/* Bilibili 收藏（轻量：只收藏跳转，不做解析下载） */
+function renderBv(){
+  const favs=store.get('bvFavs',[]);
+  const box=document.getElementById('bvList'); box.innerHTML='';
+  if(!favs.length){ box.innerHTML='<p class="small">还没有收藏，去B站找个喜欢的跟练视频吧～</p>'; return; }
+  favs.forEach((f,i)=>{
+    const row=document.createElement('div'); row.className='hist-row';
+    const safeId=String(f.id).replace(/</g,'&lt;');
+    row.innerHTML='<div class="hist-emoji">📺</div><div style="flex:1"><b>'+safeId+'</b><br><span class="small">点击去B站观看</span></div>';
+    const wrap=document.createElement('div');
+    const go=document.createElement('button'); go.className='mini-btn'; go.textContent='去看';
+    go.onclick=()=>window.open(f.url,'_blank');
+    const del=document.createElement('button'); del.className='mini-btn'; del.textContent='删'; del.style.marginLeft='6px';
+    del.onclick=()=>{ const a=store.get('bvFavs',[]); a.splice(i,1); store.set('bvFavs',a); renderBv(); };
+    wrap.appendChild(go); wrap.appendChild(del); row.appendChild(wrap); box.appendChild(row);
+  });
+}
+document.getElementById('bvAdd').onclick=()=>{
+  const raw=document.getElementById('bvInput').value.trim();
+  if(!raw){ toast('先粘贴个链接～'); return; }
+  const m=raw.match(/BV[0-9A-Za-z]+/);
+  const id=m?m[0]:'收藏链接';
+  const url=m?('https://www.bilibili.com/video/'+m[0]):(/^https?:/.test(raw)?raw:('https://'+raw));
+  const favs=store.get('bvFavs',[]); favs.unshift({id,url}); store.set('bvFavs',favs.slice(0,20));
+  document.getElementById('bvInput').value=''; renderBv(); toast('已收藏 📺');
+};
+renderBv();
+
+/* ================= 程序化跟练配乐（Web Audio 现场合成，无版权） ================= */
+const Music = {
+  ctx:null, master:null, noiseBuf:null, timer:null, step:0, nextTime:0, style:null, on:true,
+  STYLES:{
+    warmup:  {bpm:124, kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0], hat:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,2], snare:[], bass:[45,0,0,0,0,0,45,0,43,0,0,0,0,0,41,0], bt:'square', label:'热身律动'},
+    strength:{bpm:100, kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0], hat:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0], snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1], bass:[40,0,40,40,0,40,0,40,40,0,40,40,0,38,0,40], bt:'sawtooth', label:'力量节奏'},
+    hold:    {bpm:92,  kick:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0], hat:[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0], snare:[], bass:[45,0,0,0,0,0,0,0,0,0,0,0,43,0,0,0], bt:'triangle', label:'保持专注'},
+    stretch: {bpm:64,  pad:true, chords:[[57,60,64],[53,57,60],[48,53,57],[55,59,62]], label:'放松舒缓'},
+  },
+  ensure(){
+    if(!this.ctx){
+      const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      this.ctx=new AC();
+      this.master=this.ctx.createGain(); this.master.gain.value=0.9; this.master.connect(this.ctx.destination);
+      const len=this.ctx.sampleRate; this.noiseBuf=this.ctx.createBuffer(1,len,this.ctx.sampleRate);
+      const d=this.noiseBuf.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    }
+    if(this.ctx.state==='suspended') this.ctx.resume();
+  },
+  mf(m){ return 440*Math.pow(2,(m-69)/12); },
+  kick(t){ const c=this.ctx,o=c.createOscillator(),g=c.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12);
+    g.gain.setValueAtTime(0.9,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.14);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t+0.16); },
+  hat(t,open){ const c=this.ctx,s=c.createBufferSource(); s.buffer=this.noiseBuf;
+    const f=c.createBiquadFilter(); f.type='highpass'; f.frequency.value=7500;
+    const g=c.createGain(); const dur=open?0.18:0.045;
+    g.gain.setValueAtTime(open?0.22:0.16,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    s.connect(f); f.connect(g); g.connect(this.master); s.start(t); s.stop(t+dur+0.02); },
+  snare(t){ const c=this.ctx,s=c.createBufferSource(); s.buffer=this.noiseBuf;
+    const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1900; f.Q.value=0.8;
+    const g=c.createGain(); g.gain.setValueAtTime(0.5,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+    s.connect(f); f.connect(g); g.connect(this.master); s.start(t); s.stop(t+0.2); },
+  bass(t,m,type){ const c=this.ctx,o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();
+    o.type=type||'sawtooth'; o.frequency.value=this.mf(m);
+    f.type='lowpass'; f.frequency.value=700;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.32,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+    o.connect(f); f.connect(g); g.connect(this.master); o.start(t); o.stop(t+0.25); },
+  padChord(t,midis,dur){ const c=this.ctx;
+    midis.forEach(m=>{ const o=c.createOscillator(),g=c.createGain();
+      o.type='triangle'; o.frequency.value=this.mf(m); o.detune.value=(Math.random()*8-4);
+      g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(0.11,t+Math.min(1.2,dur*0.3));
+      g.gain.setValueAtTime(0.11,t+dur*0.7); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+      o.connect(g); g.connect(this.master); o.start(t); o.stop(t+dur+0.05); }); },
+  play(style){
+    this.ensure(); if(!this.ctx || !this.on) return;
+    if(this.style===style && this.timer) return;
+    this.stop();
+    this.style=style; const S=this.STYLES[style]; if(!S) return;
+    this.step=0; this.nextTime=this.ctx.currentTime+0.08;
+    const self=this;
+    if(S.pad){
+      const bar=60/S.bpm*4;
+      this.timer=setInterval(()=>{
+        while(self.nextTime < self.ctx.currentTime+0.6){
+          self.padChord(self.nextTime, S.chords[self.step%S.chords.length], bar);
+          self.nextTime+=bar; self.step++;
+        }
+      },250);
+    }else{
+      const spb=60/S.bpm/4;
+      this.timer=setInterval(()=>{
+        while(self.nextTime < self.ctx.currentTime+0.15){
+          const s=self.step%16;
+          if(S.kick[s]) self.kick(self.nextTime);
+          if(S.hat[s]) self.hat(self.nextTime, S.hat[s]===2);
+          if(S.snare[s]) self.snare(self.nextTime);
+          if(S.bass[s]) self.bass(self.nextTime, S.bass[s], S.bt);
+          self.nextTime+=spb; self.step++;
+        }
+      },30);
+    }
+  },
+  stop(){ if(this.timer){ clearInterval(this.timer); this.timer=null; } this.style=null; }
+};
+function styleFor(ex){
+  return {march:'warmup', squat:'hold', bridge:'strength', pushup:'strength', press:'strength', plank:'hold', stretch:'stretch', crunch:'strength', deadbug:'hold'}[ex.demo]||'strength';
+}
+/* 配乐调度：用户绑了自己的音频就播用户的，否则用内置合成节拍 */
+function setMusic(style){
+  P.musicStyle=style;
+  const au=document.getElementById('userAudio');
+  const custom=V.audio && V.audio[style];
+  if(!Music.on){ Music.stop(); if(au) au.pause(); return; }
+  if(custom && custom.url){
+    Music.stop();
+    if(au.src!==custom.url) au.src=custom.url;
+    au.loop=true; au.volume=0.85; au.play().catch(()=>{});
+  }else{
+    if(au) au.pause();
+    Music.play(style);
+  }
+}
+/* 用户自选配乐：绑定到四种氛围 */
+V.audio = V.audio || {};
+function renderAudioBind(){
+  const box=document.getElementById('audioBindList'); if(!box) return; box.innerHTML='';
+  Object.keys(Music.STYLES).forEach(k=>{
+    const S=Music.STYLES[k];
+    const row=document.createElement('div'); row.className='au-row';
+    const cur=V.audio[k];
+    const info=document.createElement('div'); info.style.flex='1';
+    info.innerHTML='<b style="font-size:14px">🎵 '+S.label+'</b><br><span class="small">'+(cur?String(cur.name).replace(/</g,'&lt;'):'未绑定 · 用内置节拍')+'</span>';
+    const wrap=document.createElement('div');
+    const btn=document.createElement('button'); btn.className='mini-btn'; btn.textContent=cur?'更换':'选择';
+    const inp=document.createElement('input'); inp.type='file'; inp.accept='audio/*'; inp.hidden=true;
+    btn.onclick=()=>inp.click();
+    inp.onchange=()=>{
+      const f=inp.files[0]; if(!f) return;
+      if(cur&&cur.url) URL.revokeObjectURL(cur.url);
+      V.audio[k]={name:f.name, url:URL.createObjectURL(f)};
+      renderAudioBind(); toast('已绑定到'+S.label+' 🎵');
+    };
+    wrap.appendChild(btn);
+    if(cur){
+      const clr=document.createElement('button'); clr.className='mini-btn'; clr.textContent='清除'; clr.style.marginLeft='6px';
+      clr.onclick=()=>{ if(cur.url) URL.revokeObjectURL(cur.url); delete V.audio[k]; renderAudioBind(); };
+      wrap.appendChild(clr);
+    }
+    row.appendChild(info); row.appendChild(wrap); box.appendChild(row);
+  });
+}
+renderAudioBind();
+
+/* ================= 跟练播放器 ================= */
+const P = { queue:[], idx:0, timerId:null, remaining:0, total:0, paused:false,
+            voice:true, startStamp:0, pausedMs:0, pauseStamp:0,
+            mode:'anim', speed:1, vsrc:null, title:'', lastMins:20 };
+const CIRC = 2*Math.PI*82;
+function speak(t){
+  if(!P.voice) return;
+  try{
+    if(!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t); u.lang='zh-CN'; u.rate=1.05;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function ringSet(fg, frac, label){
+  fg.style.strokeDasharray = CIRC;
+  fg.style.strokeDashoffset = CIRC*(1-frac);
+  return label;
+}
+function showView(id){
+  ['workView','restView','rpeView','summaryView'].forEach(v=>document.getElementById(v).hidden = v!==id);
+  document.getElementById('plFoot').style.display = id==='summaryView' ? 'none' : '';
+}
+function buildQueueFrom(list){
+  P.queue = [];
+  P.listLen = list.length;
+  list.forEach(ex=>{
+    for(let s=1;s<=ex.sets;s++){
+      P.queue.push({type:'work', ex, set:s});
+      const isLast = ex===list[list.length-1] && s===ex.sets;
+      if(!isLast) P.queue.push({type:'rest', sec:ex.rest||30, next:nextNameIn(list,ex,s)});
+    }
+  });
+}
+function nextNameIn(list, ex, s){
+  if(s<ex.sets) return ex.name+' · 第'+(s+1)+'组';
+  const n = list[list.indexOf(ex)+1];
+  return n ? n.name+' · '+(n.kind==='time'?n.work+'秒':n.reps+'次')+' × '+n.sets+'组' : '全部完成 🎉';
+}
+function launchPlayer(title){
+  P.title=title; P.idx=0; P.paused=false; P.pausedMs=0; P.startStamp=Date.now();
+  document.getElementById('player').hidden=false;
+  document.body.style.overflow='hidden';
+  step();
+}
+function courseList(){
+  const sc=(store.get('profile',{}).scenario)||'postpartum';
+  const c=COURSES[sc]||COURSES.postpartum;
+  return c.list.map(n=>EXERCISES.find(e=>e.name===n)).filter(Boolean);
+}
+function startCourse(){
+  const sc=(store.get('profile',{}).scenario)||'postpartum';
+  buildQueueFrom(courseList());
+  P.mode='anim';
+  Music.ensure();
+  launchPlayer((COURSES[sc]||COURSES.postpartum).title);
+}
+function startWorkout(){ startCourse(); }
+function step(){
+  const q = P.queue[P.idx];
+  document.getElementById('plStep').textContent = '动作 '+P.idx+'/'+(P.queue.length-1);
+  if(!q){ finishWorkout(); return; }
+  if(q.type==='rest'){ doRest(q); } else if(q.type==='vwork'){ doVWork(q); } else { doWork(q); }
+}
+function doWork(q){
+  P.mode='anim';
+  showView('workView');
+  const ex = q.ex;
+  renderDemo(ex.demo);
+  document.querySelector('.demo-stage').style.display='';
+  const pv0=document.getElementById('plVideo'); pv0.hidden=true; pv0.pause(); pv0.ontimeupdate=null;
+  document.getElementById('vProgWrap').hidden=true;
+  document.getElementById('speedRow').hidden=true;
+  document.getElementById('plName').textContent = ex.name;
+  document.getElementById('plSetInfo').textContent = '第 '+q.set+' 组 / 共 '+ex.sets+'组';
+  document.getElementById('plCues').innerHTML = ex.cues.map(c=>'<li>'+c+'</li>').join('');
+  const isTime = ex.kind==='time';
+  document.getElementById('ringWrap').style.display = isTime?'':'none';
+  document.getElementById('repsWrap').hidden = isTime;
+  setPaused(false);
+  setMusic(styleFor(ex));
+  if(isTime){
+    P.total = ex.work; P.remaining = ex.work;
+    speak(ex.name+'，开始');
+    tick('ringFg','plTime', ()=>{ P.idx++; step(); });
+  }else{
+    /* 次数类：动画周期 = 节奏，animationiteration 即一次计数，自动数拍 */
+    let done = 0;
+    const target = ex.reps;
+    const paint = ()=>{
+      document.getElementById('plRepsDone').textContent = done;
+      document.getElementById('plRepsTarget').textContent = target;
+    };
+    paint();
+    speak(ex.name+'，跟着我数，开始');
+    const animEl = document.getElementById('repAnim');
+    if(animEl){
+      animEl.addEventListener('animationiteration', ()=>{
+        if(P.paused || document.getElementById('player').hidden) return;
+        done++; paint();
+        speak(CN_NUM[done]||String(done));
+        if(done>=target){ P.idx++; step(); }
+      });
+    }
+  }
+}
+function tick(ringId, numId, done){
+  clearInterval(P.timerId);
+  const fg = document.getElementById(ringId);
+  const num = document.getElementById(numId);
+  const draw = ()=>{
+    num.textContent = P.remaining;
+    ringSet(fg, P.remaining/P.total, '');
+    if(P.remaining<=5 && P.remaining>0) speak(String(P.remaining));
+  };
+  draw();
+  P.timerId = setInterval(()=>{
+    if(P.paused) return;
+    P.remaining--;
+    if(P.remaining===Math.floor(P.total/2)) speak('一半了，坚持住');
+    if(P.remaining<=0){ clearInterval(P.timerId); done(); return; }
+    draw();
+  }, 1000);
+}
+function doRest(q){
+  showView('restView');
+  document.getElementById('restNext').textContent = '接下来：'+q.next;
+  P.total = q.sec; P.remaining = q.sec;
+  speak('休息');
+  setPaused(false);
+  tick('ringFg2','restTime', ()=>{ P.idx++; step(); });
+}
+/* 视频分段跟练：与动画共用同一套状态机 */
+function buildVideoQueue(){
+  P.queue=[];
+  V.segs.forEach(sg=>{
+    for(let s=1;s<=sg.sets;s++){
+      P.queue.push({type:'vwork', seg:sg, set:s});
+      P.queue.push({type:'rest', sec:sg.rest||30, next:vnextName(sg,s)});
+    }
+  });
+  if(P.queue.length && P.queue[P.queue.length-1].type==='rest') P.queue.pop();
+}
+function vnextName(sg,s){
+  if(s<sg.sets) return sg.name+' · 第'+(s+1)+'组';
+  const i=V.segs.indexOf(sg), n=V.segs[i+1];
+  return n ? n.name+' · '+fmt(n.end-n.start) : '全部完成 🎉';
+}
+function doVWork(q){
+  P.mode='video';
+  showView('workView');
+  const sg=q.seg;
+  document.querySelector('.demo-stage').style.display='none';
+  document.getElementById('ringWrap').style.display='none';
+  document.getElementById('repsWrap').hidden=true;
+  const v=document.getElementById('plVideo');
+  v.hidden=false;
+  document.getElementById('vProgWrap').hidden=false;
+  document.getElementById('speedRow').hidden=false;
+  if(v.dataset.src!==P.vsrc){ v.src=P.vsrc; v.dataset.src=P.vsrc; }
+  document.getElementById('plName').textContent=sg.name;
+  document.getElementById('plSetInfo').textContent='第 '+q.set+' 组 / 共 '+sg.sets+'组 · 视频跟练';
+  document.getElementById('plCues').innerHTML='<li>跟着视频的节奏做</li><li>跟不上就点慢放，不丢人 🐢</li>';
+  document.getElementById('vDur').textContent=fmt(sg.end-sg.start);
+  document.getElementById('vProg').style.width='0%';
+  document.getElementById('vTime').textContent='0:00';
+  setPaused(false);
+  setMusic(sg.style||'strength');
+  v.playbackRate=P.speed||1;
+  try{ v.currentTime=sg.start; }catch(e){}
+  v.play().catch(()=>{});
+  speak(sg.name+'，开始');
+  v.ontimeupdate=()=>{
+    if(P.paused || document.getElementById('player').hidden) return;
+    const el=sg.end-sg.start;
+    const cur=Math.min(v.currentTime,sg.end)-sg.start;
+    document.getElementById('vProg').style.width=Math.max(0,Math.min(100,cur/el*100))+'%';
+    document.getElementById('vTime').textContent=fmt(Math.max(0,cur));
+    if(v.currentTime>=sg.end-0.15){ v.ontimeupdate=null; v.pause(); P.idx++; step(); }
+  };
+}
+document.getElementById('startVideoBtn').onclick=()=>{
+  if(!V.segs.length || !V.url){ toast('先导入视频并切好分段～'); return; }
+  Music.ensure();
+  buildVideoQueue();
+  P.mode='video'; P.title='视频分段 · 跟练'; P.vsrc=V.url; P.speed=1;
+  document.getElementById('speedBtn').textContent='1x';
+  launchPlayer(P.title);
+};
+function setPaused(p){
+  if(P.paused===p) return;
+  if(p){ P.pauseStamp = Date.now(); }
+  else if(P.pauseStamp){ P.pausedMs += Date.now()-P.pauseStamp; P.pauseStamp=0; }
+  P.paused = p;
+  document.getElementById('plPause').textContent = p?'▶ 继续':'⏸ 暂停';
+  const st = document.querySelector('.demo-stage');
+  if(st) st.classList.toggle('paused', p);
+  if(P.mode==='video'){
+    const vv=document.getElementById('plVideo');
+    if(vv){ if(p){ vv.pause(); } else { vv.play().catch(()=>{}); } }
+  }
+  const au0=document.getElementById('userAudio');
+  if(p){ Music.stop(); if(au0) au0.pause(); }
+  else if(P.musicStyle && Music.on && !document.getElementById('player').hidden){ setMusic(P.musicStyle); }
+}
+document.getElementById('plPause').onclick = ()=>setPaused(!P.paused);
+document.getElementById('plSkip').onclick = ()=>{ clearInterval(P.timerId); P.idx++; step(); };
+document.getElementById('restSkip').onclick = ()=>{ clearInterval(P.timerId); P.idx++; step(); };
+document.getElementById('plDoneSet').onclick = ()=>{ P.idx++; step(); };
+document.getElementById('plClose').onclick = ()=>{
+  if(confirm('确定要退出本次训练吗？已完成的动作会保留记录。')){ clearInterval(P.timerId); closePlayer(); }
+};
+function closePlayer(){
+  document.getElementById('player').hidden = true;
+  document.body.style.overflow='';
+  const vv=document.getElementById('plVideo'); if(vv){ vv.pause(); vv.ontimeupdate=null; }
+  Music.stop(); const _au2=document.getElementById('userAudio'); if(_au2) _au2.pause();
+  try{ speechSynthesis.cancel(); }catch(e){}
+}
+document.getElementById('musicToggle').onclick=e=>{
+  Music.on=!Music.on;
+  e.target.classList.toggle('on', Music.on);
+  const au3=document.getElementById('userAudio');
+  if(!Music.on){ Music.stop(); if(au3) au3.pause(); toast('配乐已关 🔇'); }
+  else if(P.musicStyle && !document.getElementById('player').hidden){ setMusic(P.musicStyle); toast('配乐已开 🎵'); }
+};
+document.getElementById('voiceToggle').onclick = e=>{
+  P.voice = !P.voice;
+  e.target.classList.toggle('on', P.voice);
+  if(!P.voice){ try{ speechSynthesis.cancel(); }catch(err){} }
+};
+function finishWorkout(){
+  clearInterval(P.timerId);
+  const mins = Math.max(1, Math.round((Date.now()-P.startStamp-P.pausedMs)/60000));
+  P.lastMins = mins;
+  document.getElementById('sumTime').innerHTML = mins+'<small style="font-size:11px;color:var(--muted)">分</small>';
+  const cnt = P.mode==='video' ? V.segs.length : (P.listLen||EXERCISES.length);
+  document.getElementById('sumCount').innerHTML = cnt+'<small style="font-size:11px;color:var(--muted)">'+(P.mode==='video'?'段':'个')+'</small>';
+  document.getElementById('sumKcal').innerHTML = Math.round(mins*3.5)+'<small style="font-size:11px;color:var(--muted)">kcal</small>';
+  Music.stop(); const _au=document.getElementById('userAudio'); if(_au) _au.pause();
+  showView('rpeView');
+}
+document.querySelectorAll('.rpe').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.rpe').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const rpe = b.dataset.rpe;
+    const map = {
+      easy:'你恢复得比想象中快！下次可以试试每组多做 2 次，或组间休息缩短 5 秒，循序渐进就好。',
+      ok:'这个强度刚刚好，保持就是胜利。身体正在稳稳地变强。',
+      hard:'没关系，身体正在适应。下次可以把次数减 2 个——先完成，再完美。'
+    };
+    document.getElementById('adaptText').textContent = map[rpe];
+    document.getElementById('encCard').innerHTML = '💛 '+ENCS[Math.floor(Math.random()*ENCS.length)];
+    const d = new Date();
+    const hist = store.get('hist', []);
+    hist.unshift({d:(d.getMonth()+1)+'月'+d.getDate()+'日', t:P.title||'全身唤醒 · 跟练', m:'约'+(P.lastMins||20)+'分钟',
+      r: rpe==='easy'?'😌 轻松':rpe==='ok'?'🙂 刚好':'🥵 吃力'});
+    store.set('hist', hist.slice(0,20));
+    setTimeout(()=>{ showView('summaryView'); renderHist(); }, 450);
+  };
+});
+document.getElementById('startBtn').onclick = ()=>{
+  const p = store.get('profile', {});
+  if((p.cleared==='no'||p.cleared==='notyet') && !p.skipped){
+    if(!confirm('医生还没确认可以运动，建议先从每天散步开始。\n\n如果你已经获得许可，点"确定"开始体验跟练。')) return;
+  }
+  startWorkout();
+};
+/* 小结页按钮 */
+const sumBtn = document.createElement('button');
+sumBtn.className='btn btn-primary'; sumBtn.textContent='收下鼓励，回到首页 💛';
+sumBtn.style.marginTop='4px';
+sumBtn.onclick = ()=>{ closePlayer(); toast('今日训练已记录 ✨'); };
+document.getElementById('summaryView').appendChild(sumBtn);
+
+/* ================= 启动 ================= */
+paintSteps();
+if(store.get('profile', null)){ enterApp(); }
+</script>
+</body>
+</html>
