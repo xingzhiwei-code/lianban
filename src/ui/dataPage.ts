@@ -277,7 +277,7 @@ export function initDataPage(c: DataCtx): void {
     toast(DATA.exportToast);
   };
   $('deleteBtn').onclick = async () => {
-    if (!confirmDialog(DATA.deleteConfirm)) return;
+    if (!(await confirmDialog(DATA.deleteConfirm))) return;
     await deleteAllData();
     toast(DATA.deletedToast);
     ctx.onCleared();

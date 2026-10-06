@@ -9,7 +9,7 @@ export const EXERCISES: Exercise[] = [
     cues: ['手臂自然摆动', '膝盖抬到舒服的高度', '保持呼吸均匀，先把身体叫醒'],
   },
   {
-    name: '开合跳', emoji: '🏃', demo: 'march', kind: 'time', work: 30, reps: 0, sets: 3, rest: 20,
+    name: '开合跳', emoji: '🏃', demo: 'jack', kind: 'time', work: 30, reps: 0, sets: 3, rest: 20,
     tag: '全身', lv: 2, impact: '中', equip: '徒手', scen: ['beginner', 'fatloss', 'muscle'],
     safe: [], reg: '改回原地踏步', prog: '加快节奏，连做不停',
     cues: ['落地要轻，膝盖微屈缓冲', '手臂向上击掌', '保持呼吸节奏，别憋气'],
@@ -109,6 +109,7 @@ export function isDraUnsafe(ex: Exercise): boolean {
 export function demoPeriod(ex: Exercise): number {
   const map: Record<string, number> = {
     march: 1.0,
+    jack: 1.0,
     squat: 2.0,
     bridge: 2.2,
     pushup: 2.4,

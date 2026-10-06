@@ -246,6 +246,37 @@ button {
   opacity: 1;
 }
 
+/* ---------- 应用内确认弹窗 ---------- */
+.app-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.app-dialog-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 51, 48, 0.5);
+}
+.app-dialog-card {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px 20px 18px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+.app-dialog-msg {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
 /* ---------- 开屏问卷 ---------- */
 #screen-onboard {
   padding: 28px 22px;
@@ -954,8 +985,10 @@ canvas.chart {
   stroke: #3b3330;
   stroke-width: 5;
 }
+/* 旋转轴心用 viewBox 坐标：fill-box 会把 px 值的 transform-origin
+   相对包围盒左上角解析（偏移翻倍），导致四肢绕画布外一点甩动 */
 .limb {
-  transform-box: fill-box;
+  transform-box: view-box;
 }
 @keyframes swingA {
   0%, 100% { transform: rotate(24deg); }
@@ -1001,6 +1034,27 @@ canvas.chart {
 @keyframes crunchUp {
   0%, 100% { transform: rotate(0deg); }
   50% { transform: rotate(-18deg); }
+}
+/* 开合跳：并拢落地 → 跳开腾空（双臂上举 + 双腿外开） */
+@keyframes jackBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes armOutL {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(150deg); }
+}
+@keyframes armOutR {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-150deg); }
+}
+@keyframes legOutL {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-22deg); }
+}
+@keyframes legOutR {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(22deg); }
 }
 
 /* ---------- 视频跟练 ---------- */

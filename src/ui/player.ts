@@ -36,6 +36,7 @@ let listLen = 0; // 动画模式：动作数；视频模式：分段数
 let completedWorks = 0;
 let currentStyle: MusicStyle | null = null;
 let videoSrc: string | null = null;
+let repGen = 0; // 队列项代际：每次 step() 自增，使旧的兜底数拍 interval 自动失效
 
 /* ---------------- 视图切换 ---------------- */
 function showView(id: 'workView' | 'restView' | 'rpeView' | 'summaryView'): void {
@@ -108,8 +109,9 @@ export function buildAnimQueue(list: Exercise[]): void {
     for (let s = 1; s <= ex.sets; s++) {
       queue.push({ type: 'work', ex, set: s, order: oi + 1 });
       const isLast = ex === list[list.length - 1] && s === ex.sets;
-      if (!isLast) {
-        queue.push({ type: 'rest', sec: ex.rest || 30, next: nextNameIn(list, ex, s) });
+      const rest = ex.rest ?? 30;
+      if (!isLast && rest > 0) {
+        queue.push({ type: 'rest', sec: rest, next: nextNameIn(list, ex, s) });
       }
     }
   });
@@ -126,7 +128,10 @@ export function buildVideoQueue(segs: VideoSegment[]): void {
   segs.forEach((sg, oi) => {
     for (let s = 1; s <= sg.sets; s++) {
       queue.push({ type: 'vwork', seg: sg, set: s, order: oi + 1 });
-      queue.push({ type: 'rest', sec: sg.rest || 30, next: vnextName(segs, sg, s) });
+      const rest = sg.rest ?? 30;
+      if (rest > 0) {
+        queue.push({ type: 'rest', sec: rest, next: vnextName(segs, sg, s) });
+      }
     }
   });
   // 去掉最后一个多余的休息
@@ -149,6 +154,7 @@ export function launchPlayer(t: string): void {
 }
 
 function step(): void {
+  repGen++; // 进入新队列项，旧的数拍 interval 在下次 tick 自行清除
   if (idx >= queue.length) {
     finishWorkout();
     return;
@@ -218,8 +224,24 @@ function doWork(q: Extract<QueueItem, { type: 'work' }>): void {
         if (done >= target) advance();
       });
     } else {
-      // 无循环动画兜底：按周期数拍（理论不会走到，安全兜底）
-      fallbackRepCount(ex, target, done, paint);
+      // 无循环动画兜底（如徒手深蹲的静蹲演示）：按周期数拍。
+      // 注意必须复用上面的 done 闭包，paint 才能显示真实进度
+      const gen = repGen;
+      const period = ex.demo === 'march' ? 1000 : 2200;
+      const id = window.setInterval(() => {
+        if (gen !== repGen) {
+          window.clearInterval(id); // 已跳到其他队列项，自杀防止跨项串台/误触发 advance
+          return;
+        }
+        if (paused || $('player').hidden) return;
+        done++;
+        paint();
+        speech.speak(cnNum(done));
+        if (done >= target) {
+          window.clearInterval(id);
+          advance();
+        }
+      }, period);
     }
   }
 }
@@ -231,21 +253,6 @@ function renderDemo(type: Exercise['demo']): void {
 
 function escapeCue(s: string): string {
   return s.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function fallbackRepCount(ex: Exercise, target: number, start: number, paint: () => void): void {
-  let done = start;
-  const period = ex.demo === 'march' ? 1000 : 2200;
-  const id = window.setInterval(() => {
-    if (paused || $('player').hidden) return;
-    done++;
-    paint();
-    speech.speak(cnNum(done));
-    if (done >= target) {
-      window.clearInterval(id);
-      advance();
-    }
-  }, period);
 }
 
 function startTimer(ringId: string, numId: string, done: () => void): void {
@@ -409,9 +416,9 @@ export function initPlayer(c: PlayerCtx): void {
     step();
   };
   $('plClose').onclick = () => {
-    if (confirmDialog(PLAYER.exitConfirm)) {
-      exitWorkout();
-    }
+    void confirmDialog(PLAYER.exitConfirm).then((ok) => {
+      if (ok) exitWorkout();
+    });
   };
   $('sumBtn').onclick = () => {
     closePlayer();
@@ -462,6 +469,7 @@ function exitWorkout(): void {
 }
 
 function closePlayer(): void {
+  repGen++; // 关闭后一切数拍循环失效
   $('player').hidden = true;
   document.body.style.overflow = '';
   const v = $('plVideo') as HTMLVideoElement;

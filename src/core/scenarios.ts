@@ -43,6 +43,7 @@ export const COURSES: Record<ScenarioKey, Course> = {
 /** 配乐映射表（PRD 附录 C）：demo 类型 → 氛围 */
 const DEMO_STYLE: Record<DemoType, MusicStyle> = {
   march: 'warmup',
+  jack: 'warmup',
   squat: 'hold',
   bridge: 'strength',
   pushup: 'strength',

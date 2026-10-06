@@ -1,4 +1,5 @@
 // UI 工具：toast、格式化、DOM 辅助、时间解析等
+import { DIALOG } from '../content/copy';
 
 let toastEl: HTMLElement | null = null;
 let toastTimer: number | undefined;
@@ -79,9 +80,49 @@ export function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/** 原生确认框封装（二次确认文案已集中在 copy.ts） */
-export function confirmDialog(msg: string): boolean {
-  return window.confirm(msg);
+/** 应用内二次确认（Promise 化，替代原生 confirm，移动端样式统一） */
+export function confirmDialog(msg: string): Promise<boolean> {
+  if (!dlgEl) {
+    dlgEl = document.createElement('div');
+    dlgEl.className = 'app-dialog';
+    dlgEl.hidden = true;
+    dlgEl.innerHTML = `
+      <div class="app-dialog-mask" data-act="cancel"></div>
+      <div class="app-dialog-card" role="alertdialog" aria-modal="true">
+        <p class="app-dialog-msg"></p>
+        <div class="btn-row">
+          <button class="btn btn-ghost" data-act="cancel"></button>
+          <button class="btn btn-primary" data-act="ok"></button>
+        </div>
+      </div>`;
+    document.body.appendChild(dlgEl);
+    dlgMsg = dlgEl.querySelector('.app-dialog-msg');
+    dlgEl.querySelectorAll<HTMLButtonElement>('button[data-act]').forEach((b) => {
+      b.textContent = b.dataset.act === 'ok' ? DIALOG.ok : DIALOG.cancel;
+    });
+    dlgEl.addEventListener('click', (e) => {
+      const act = (e.target as HTMLElement).dataset?.act;
+      if (act === 'ok') settleConfirmDialog(true);
+      else if (act === 'cancel') settleConfirmDialog(false);
+    });
+  }
+  dlgMsg!.textContent = msg;
+  dlgEl.hidden = false;
+  return new Promise<boolean>((resolve) => {
+    dlgResolve = resolve;
+  });
+}
+
+let dlgEl: HTMLElement | null = null;
+let dlgMsg: HTMLElement | null = null;
+let dlgResolve: ((ok: boolean) => void) | null = null;
+
+function settleConfirmDialog(ok: boolean): void {
+  if (!dlgEl || !dlgResolve) return;
+  dlgEl.hidden = true;
+  const resolve = dlgResolve;
+  dlgResolve = null;
+  resolve(ok);
 }
 
 /** 数字输入提示框（体重/围度录入），返回合法数值或 null */

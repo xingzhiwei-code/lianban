@@ -168,15 +168,13 @@ export async function renderHome(onScenarioSwitch: () => void): Promise<void> {
   `;
 
   // 交互绑定
-  document.getElementById('startBtn')!.onclick = () => {
-    if (gentleMode()) {
-      if (!confirmDialog(TOAST.startConfirm)) return;
-    }
+  document.getElementById('startBtn')!.onclick = async () => {
+    if (gentleMode() && !(await confirmDialog(TOAST.startConfirm))) return;
     startAnimWorkout(courseList(), c.title);
   };
 
-  document.getElementById('scenSwitch')!.onclick = () => {
-    if (!confirmDialog(TOAST.switchConfirm)) return;
+  document.getElementById('scenSwitch')!.onclick = async () => {
+    if (!(await confirmDialog(TOAST.switchConfirm))) return;
     onScenarioSwitch();
   };
 

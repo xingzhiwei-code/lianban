@@ -363,3 +363,9 @@ export const TOAST = {
   kgUnit: 'kg',
   cmUnit: 'cm',
 };
+
+/* ---------------- 应用内确认弹窗 ---------------- */
+export const DIALOG = {
+  cancel: '取消',
+  ok: '确定',
+};

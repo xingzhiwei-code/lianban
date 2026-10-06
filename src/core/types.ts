@@ -3,6 +3,7 @@
 export type ScenarioKey = 'postpartum' | 'beginner' | 'fatloss' | 'muscle' | 'office';
 export type DemoType =
   | 'march'
+  | 'jack'
   | 'squat'
   | 'bridge'
   | 'pushup'

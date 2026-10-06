@@ -10,14 +10,26 @@ const ARM_L = (x1: number, y1: number, x2: number, y2: number, anim: string) =>
 
 const DEMOS: Record<DemoType, string> = {
   // 原地踏步：全身轻微弹跳 + 手脚交替摆动
+  // 四肢起点贴合躯干（肩 100,54 / 髋 100,92），端点 ±8° 初始倾角区分左右
   march: `${GROUND}
 <g class="fig" style="animation:bob 1s ease-in-out infinite">
   <circle class="fig-head" cx="100" cy="26" r="13"/>
   <line x1="100" y1="42" x2="100" y2="92"/>
-  ${ARM_L(92, 54, 92, 86, 'swingB 1s ease-in-out infinite')}
-  ${ARM_L(108, 54, 108, 86, 'swingA 1s ease-in-out infinite')}
-  ${ARM_L(94, 92, 94, 134, 'swingA 1s ease-in-out infinite')}
-  ${ARM_L(106, 92, 106, 134, 'swingB 1s ease-in-out infinite')}
+  ${ARM_L(100, 54, 95.5, 86, 'swingB 1s ease-in-out infinite')}
+  ${ARM_L(100, 54, 104.5, 86, 'swingA 1s ease-in-out infinite')}
+  ${ARM_L(100, 92, 94, 134, 'swingA 1s ease-in-out infinite')}
+  ${ARM_L(100, 92, 106, 134, 'swingB 1s ease-in-out infinite')}
+</g>`,
+
+  // 开合跳：双臂上举击掌 + 双腿开合（一个循环 = 一次开合）
+  jack: `${GROUND}
+<g class="fig" style="animation:jackBob 1s ease-in-out infinite">
+  <circle class="fig-head" cx="100" cy="26" r="13"/>
+  <line x1="100" y1="42" x2="100" y2="92"/>
+  ${ARM_L(100, 54, 95.5, 90, 'armOutL 1s ease-in-out infinite')}
+  ${ARM_L(100, 54, 104.5, 90, 'armOutR 1s ease-in-out infinite')}
+  ${ARM_L(100, 92, 100, 134, 'legOutL 1s ease-in-out infinite')}
+  ${ARM_L(100, 92, 100, 134, 'legOutR 1s ease-in-out infinite')}
 </g>`,
 
   // 靠墙静蹲：静态保持，轻微颤抖（不抢注意力）
